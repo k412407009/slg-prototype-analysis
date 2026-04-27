@@ -1,0 +1,62 @@
+{
+  "episode": "04",
+  "title": "七日渡河",
+  "subtitle": "前 7 天的渐进露出与三段式心智迁移",
+  "concept_images": [
+    {
+      "name": "04_cover",
+      "prompt": "cinematic literary illustration, a small wooden boat crossing a wide river at dusk with seven distinct lanterns placed one at a time along the journey, each lantern a different color progressing from warm gold to cool blue, misty atmosphere, silhouette of a person rowing, far shore becoming visible, hayao miyazaki ghibli-inspired mood, muted palette of dusk gold teal and navy, slight film grain, 3:2 aspect, magazine-quality illustration, no text",
+      "size": "2304x1728",
+      "style_prefix": true
+    }
+  ],
+  "infographics": [
+    {
+      "name": "04_七日时间轴",
+      "content": "标题：前 7 天渐进露出节奏\n横向时间轴 D1-D7：\n  D1：纯休闲皮（推门/合并/救人）\n  D2：引入「威胁」概念（远处出现敌军）\n  D3：首次被攻击但伤害很小（冲突体验）\n  D4：引入联盟邀请（社交种子）\n  D5：首次 PvP 但有保护（试水）\n  D6：联盟战开启（内核显现）\n  D7：赛季开启（SLG 内核全量接管）\n每天标注：休闲皮强度（7→5→3→1）、SLG 强度（1→3→5→7）",
+      "layout": "winding-roadmap",
+      "style": "morandi-journal",
+      "orientation": "landscape"
+    },
+    {
+      "name": "04_三段式迁移图",
+      "content": "标题：心智迁移的三段式\n三层金字塔（从下到上）：\n  第 1 段 · 身份认同期（D1-D2）\n    - 休闲皮主导\n    - 建立「我是救人的好人」自我认知\n    - 核心：不打破玩家第一印象\n  第 2 段 · 冲突初体验期（D3-D4）\n    - 引入威胁但不强制\n    - 建立「我需要变强」的动机\n    - 核心：冲突要远、要温和\n  第 3 段 · 内核接管期（D5-D7）\n    - SLG 机制全量开启\n    - 玩家此时已主动接受 SLG\n    - 核心：让内核「长出来」而非「推给你」",
+      "layout": "hierarchical-layers",
+      "style": "craft-handmade",
+      "orientation": "portrait"
+    },
+    {
+      "name": "04_AB测试矩阵",
+      "content": "标题：前 7 天必做的 6 个 A/B 测试\n六个方格（每格包含）：\n  1. SLG 元素首次露出时机：D2 vs D3 vs D5\n  2. 首次威胁强度：远距离 vs 中距离 vs 近距离\n  3. 第一次战斗结果：必胜 vs 可胜可负 vs 必负\n  4. 联盟邀请措辞：「加入」vs「求助」vs「邀请」\n  5. 第一次被攻击：有保护 vs 轻微损失 vs 完全开放\n  6. D7 后休闲皮保留比例：30% vs 10% vs 0%\n底部：每个测试的成功信号 + 决策时长",
+      "layout": "dashboard",
+      "style": "bold-graphic",
+      "orientation": "landscape"
+    }
+  ],
+  "games": [
+    {
+      "display_name": "Whiteout Survival",
+      "store_dir_name": "Whiteout-Survival",
+      "appstore_id": "6444323435",
+      "gplay_id": "com.gof.global",
+      "steam_id": null,
+      "notes": "复用 - D1/D4/D7 对照样本"
+    },
+    {
+      "display_name": "Last War Survival",
+      "store_dir_name": "Last-War-Survival",
+      "appstore_id": null,
+      "gplay_id": null,
+      "steam_id": null,
+      "notes": "复用本地 - 推门 D1 与 SLG D7 对照"
+    },
+    {
+      "display_name": "Kingshot",
+      "store_dir_name": "Kingshot",
+      "appstore_id": null,
+      "gplay_id": null,
+      "steam_id": null,
+      "notes": "复用本地 - 新兴 Hybrid SLG 参考"
+    }
+  ]
+}

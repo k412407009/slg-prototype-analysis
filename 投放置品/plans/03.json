@@ -1,0 +1,62 @@
+{
+  "episode": "03",
+  "title": "两段式骗局",
+  "subtitle": "Hybrid-Casual SLG 的 D1 漏斗与 D60 真相",
+  "concept_images": [
+    {
+      "name": "03_cover",
+      "prompt": "cinematic split composition diptych, left half shows bright cheerful casual mobile game UI with cartoon characters opening doors choosing options, right half shows serious dark SLG base-building interface with troops and fortress, a hairline crack running down the middle where the two meet, subtle surrealist atmosphere, warm vs cool color contrast, magazine editorial style, muted palette overall, film grain, 3:2 aspect, no text, illustration not screenshot",
+      "size": "2304x1728",
+      "style_prefix": true
+    }
+  ],
+  "infographics": [
+    {
+      "name": "03_两段式对比",
+      "content": "标题：Hybrid-Casual SLG 的两张脸\n左列：D1 的脸（休闲皮）\n  - 玩法：推门、合并、消除、经营\n  - 体验：30 秒一个循环、即时快感\n  - 广告信号：高 thumb-stop、高完播率\n右列：D60 的脸（SLG 内核）\n  - 玩法：联盟战、资源博弈、PvP\n  - 体验：3 天一个赛季、长线运营\n  - 商业化：月付费 500-3000 美元\n中间：D7-D14 心智迁移的过渡期",
+      "layout": "comparison-matrix",
+      "style": "bold-graphic",
+      "orientation": "landscape"
+    },
+    {
+      "name": "03_三家哲学四宫格",
+      "content": "标题：Hybrid-Casual SLG 的四种哲学\n四宫格：\n  左上 · Last War：买量套利派\n    - 素材与内核明显脱节\n    - D1 漏斗效率优先\n    - 靠 D60 ARPU 追平损失\n  右上 · Whiteout Survival：全场景融合派\n    - 题材统一、内核克制\n    - 末日生存包装整个体验\n    - 创意多样、跨域复利\n  左下 · Top War：原生融合派\n    - 合并玩法天然嵌进 SLG\n    - 漏斗与内核无缝衔接\n    - 教科书级 Hybrid 鼻祖\n  右下 · 传统 SLG：数值深渊派\n    - 不靠休闲皮\n    - 重度玩家直达\n    - CPI 高但 LTV 也高",
+      "layout": "bento-grid",
+      "style": "corporate-memphis",
+      "orientation": "landscape"
+    },
+    {
+      "name": "03_推门素材解剖",
+      "content": "标题：推门素材的 4 层结构\n从上到下：\n  第 1 层（0-3 秒）：视觉钩子\n    - 夸张表情、明快色彩、简单情境\n    - 触发 thumb-stop\n  第 2 层（3-8 秒）：选择题\n    - A/B 二选一、明显对错\n    - 制造「我来选」的参与感\n  第 3 层（8-15 秒）：情绪峰值\n    - 选对爽感、选错惨烈\n    - 观众「我要试试」\n  第 4 层（15-20 秒）：CTA\n    - Download Now\n    - 完播率指标爆表",
+      "layout": "linear-progression",
+      "style": "cyberpunk-neon",
+      "orientation": "portrait"
+    }
+  ],
+  "games": [
+    {
+      "display_name": "Whiteout Survival",
+      "store_dir_name": "Whiteout-Survival",
+      "appstore_id": "6444323435",
+      "gplay_id": "com.gof.global",
+      "steam_id": null,
+      "notes": "复用 01 - 全场景融合派"
+    },
+    {
+      "display_name": "Last War Survival",
+      "store_dir_name": "Last-War-Survival",
+      "appstore_id": null,
+      "gplay_id": null,
+      "steam_id": null,
+      "notes": "复用本地 - 买量套利派"
+    },
+    {
+      "display_name": "Top War Battle Game",
+      "store_dir_name": "Top-War-Battle-Game",
+      "appstore_id": "1515390091",
+      "gplay_id": "com.topwar.gp",
+      "steam_id": null,
+      "notes": "复用 01 - 原生融合派"
+    }
+  ]
+}

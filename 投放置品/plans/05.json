@@ -1,0 +1,62 @@
+{
+  "episode": "05",
+  "title": "选品四周",
+  "subtitle": "一个研发出身的世界观选品方法论",
+  "concept_images": [
+    {
+      "name": "05_cover",
+      "prompt": "cinematic editorial illustration, a large funnel suspended in a misty landscape with a brass compass at its base, many tiny worlds floating above waiting to be filtered through, one final chosen world glowing at the bottom of the funnel, surrealist rene magritte inspired composition, muted palette of warm amber parchment and deep teal, slight film grain, 3:2 aspect, magazine-quality illustration, no text, conceptual",
+      "size": "2304x1728",
+      "style_prefix": true
+    }
+  ],
+  "infographics": [
+    {
+      "name": "05_四周漏斗",
+      "content": "标题：世界观选品 · 四周漏斗 SOP\n漏斗从上到下 5 层：\n  顶层：20 个候选题材（头脑风暴）\n  第 1 周 · 五维打分：20 → 7 个入围\n  第 2 周 · 三故事验证：7 → 4 个通过\n  第 3 周 · 机制反推：4 → 2 个可行\n  第 4 周 · 买量可行性：2 → 1 个推荐立项\n每层标注：产出物、决策人、耗时",
+      "layout": "funnel",
+      "style": "morandi-journal",
+      "orientation": "portrait"
+    },
+    {
+      "name": "05_15题材雷达",
+      "content": "标题：15 个题材五维打分雷达对比\n五个维度轴：\n  1. 劳作性（建设感）\n  2. 威胁性（冲突感）\n  3. 集体性（社交感）\n  4. 文化穿透力（全球可理解）\n  5. 付费合理性（剧情要求玩家花钱自然）\n示例标注 3-4 个题材：\n  末日极寒生存（满分 28/30 → WoS 路径）\n  中世纪领主（15/30 → 边缘）\n  战国领主（8/30 → 文化穿透失败）\n  末日+克苏鲁（待验证）",
+      "layout": "dashboard",
+      "style": "corporate-memphis",
+      "orientation": "landscape"
+    },
+    {
+      "name": "05_末日心智拼图",
+      "content": "标题：末日生存题材 = 预装心智基础设施\n中心标注：玩家心中的末日世界\n周围六个拼图块：\n  - 行尸走肉（剧集）\n  - 最后生还者（游戏 IP）\n  - 三体（小说）\n  - 疯狂麦克斯（电影）\n  - Fallout（游戏 IP）\n  - 雪国列车（电影）\n底部金句：「玩家不需要你教育他什么是末日」",
+      "layout": "hub-spoke",
+      "style": "morandi-journal",
+      "orientation": "landscape"
+    }
+  ],
+  "games": [
+    {
+      "display_name": "Whiteout Survival",
+      "store_dir_name": "Whiteout-Survival",
+      "appstore_id": "6444323435",
+      "gplay_id": "com.gof.global",
+      "steam_id": null,
+      "notes": "复用 - 末日+冰原题材标杆"
+    },
+    {
+      "display_name": "State of Survival",
+      "store_dir_name": "State-of-Survival",
+      "appstore_id": "1452161072",
+      "gplay_id": "com.kingsgroup.sos",
+      "steam_id": null,
+      "notes": "末日+丧尸对照"
+    },
+    {
+      "display_name": "Frostpunk",
+      "store_dir_name": "Frostpunk",
+      "appstore_id": null,
+      "gplay_id": null,
+      "steam_id": "323190",
+      "notes": "末日+工业题材世界观参考（Steam 端）"
+    }
+  ]
+}

@@ -1,0 +1,54 @@
+{
+  "episode": "02",
+  "title": "机器学习的午夜",
+  "subtitle": "pLTV、冷启动窗口与主动扰动",
+  "concept_images": [
+    {
+      "name": "02_cover",
+      "prompt": "cinematic editorial illustration, a massive glowing black box server rack at midnight, data streams in blue-cyan flowing in and orange-red predictions flowing out, one lonely silhouette of a human observer standing in front, dwarfed by the scale, moody cyberpunk-noir atmosphere with film grain, muted palette of midnight blue and amber warning orange, slight German expressionism influence, 3:2 aspect, no text, magazine illustration quality",
+      "size": "2304x1728",
+      "style_prefix": true
+    }
+  ],
+  "infographics": [
+    {
+      "name": "02_冷启动窗口曲线",
+      "content": "标题：冷启动窗口的 6 年缩短曲线\n横轴：2020 至 2026 年\n纵轴：冷启动窗口长度（天）\n数据点（示例）：\n  2020: 21 天 (Meta ABO 时代)\n  2022: 14 天 (AEO 推广)\n  2024: 7 天 (VO + Advantage+ 上线)\n  2026: 3 天 (Advantage+ 全量 + GEM 融合)\n趋势说明：窗口缩短 = 套利窗口收窄 = 对素材创意的要求更高",
+      "layout": "dashboard",
+      "style": "cyberpunk-neon",
+      "orientation": "landscape"
+    },
+    {
+      "name": "02_pLTV博弈图",
+      "content": "标题：平台的 pLTV 模型 vs 广告主的 LTV 模型\n左列：平台视角\n  - 数据输入：所有广告主的行为数据（跨域）\n  - 预测窗口：7 天内的 pValue\n  - 弱点：看不到游戏内长线留存细节\n右列：广告主视角\n  - 数据输入：单款游戏的 D7/D30/D60 真实 LTV\n  - 预测窗口：D60-D365\n  - 优势：看得到平台看不到的长线价值\n中间：预测精度差 = 套利空间",
+      "layout": "comparison-matrix",
+      "style": "corporate-memphis",
+      "orientation": "landscape"
+    },
+    {
+      "name": "02_信号级冷启动对照",
+      "content": "标题：用户级冷启动 vs 信号级冷启动\n左：用户级冷启动（旧）\n  - 算法针对每个用户慢慢学\n  - 需要 21 天\n右：信号级冷启动（新）\n  - 算法针对每组素材信号学\n  - 需要 3 天\n底部：「主动制造扰动」让算法持续在学",
+      "layout": "comparison-matrix",
+      "style": "morandi-journal",
+      "orientation": "landscape"
+    }
+  ],
+  "games": [
+    {
+      "display_name": "Rise of Kingdoms",
+      "store_dir_name": "Rise-of-Kingdoms",
+      "appstore_id": "1419453236",
+      "gplay_id": "com.lilithgame.roc.gp",
+      "steam_id": null,
+      "notes": "经典重 SLG，2018 年冷启动套利代表"
+    },
+    {
+      "display_name": "Puzzles & Survival",
+      "store_dir_name": "Puzzles-Survival",
+      "appstore_id": "1536169152",
+      "gplay_id": "com.global.ztmslg",
+      "steam_id": null,
+      "notes": "三消+SLG 融合，2020 年信号级套利代表"
+    }
+  ]
+}

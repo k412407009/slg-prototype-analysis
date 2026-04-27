@@ -1,0 +1,62 @@
+{
+  "episode": "01",
+  "title": "买量三论",
+  "subtitle": "投放自动化、运营停滞与时间差套利",
+  "concept_images": [
+    {
+      "name": "01_cover",
+      "prompt": "cinematic editorial illustration, three silhouettes sitting around a round table in a dim noir-lit room, faces half hidden in shadow, a holographic pLTV prediction curve floating above the table casting blue-orange light, smoke, moody Edward Hopper-inspired composition, muted palette of deep navy teal and warm amber, slight film grain, 3:2 aspect, magazine-quality illustration, no text",
+      "size": "2304x1728",
+      "style_prefix": true
+    }
+  ],
+  "infographics": [
+    {
+      "name": "01_三种论对照",
+      "content": "标题：买量三种论的水分评估\n左列：投放自动化派 / 运营停滞派 / 时间差套利派\n中列：核心主张（一句话）\n右列：水分评估（高/中/低）+ 一句评语\n底部：金句「真正的套利是预测精度差，不是信息差」",
+      "layout": "comparison-matrix",
+      "style": "morandi-journal",
+      "orientation": "landscape"
+    },
+    {
+      "name": "01_市场博弈图",
+      "content": "标题：买量背后的三个市场\n中心：游戏厂商\n三条辐射线连接到：\n  1. 流量市场（广告平台/算法）\n  2. 信息市场（玩家认知/素材）\n  3. 注意力市场（玩家时间/留存）\n每个市场旁标注：主要玩家、流动规则、套利窗口",
+      "layout": "hub-spoke",
+      "style": "corporate-memphis",
+      "orientation": "landscape"
+    },
+    {
+      "name": "01_金句图",
+      "content": "大字主标题：你比算法更准的那个百分比，就是你的利润\n副标题：套利 ≠ 找漏洞，套利 = 预测精度差\n底部小字：系列 01 · 买量三论",
+      "layout": "bento-grid",
+      "style": "bold-graphic",
+      "orientation": "landscape"
+    }
+  ],
+  "games": [
+    {
+      "display_name": "Whiteout Survival",
+      "store_dir_name": "Whiteout-Survival",
+      "appstore_id": "6444323435",
+      "gplay_id": "com.gof.global",
+      "steam_id": null,
+      "notes": "赛道对照 - 全场景融合派代表"
+    },
+    {
+      "display_name": "Last War Survival",
+      "store_dir_name": "Last-War-Survival",
+      "appstore_id": null,
+      "gplay_id": null,
+      "steam_id": null,
+      "notes": "买量套利派代表（本地已有）"
+    },
+    {
+      "display_name": "Top War Battle Game",
+      "store_dir_name": "Top-War-Battle-Game",
+      "appstore_id": "1515390091",
+      "gplay_id": "com.topwar.gp",
+      "steam_id": null,
+      "notes": "原生融合派代表（合并+SLG 鼻祖）"
+    }
+  ]
+}

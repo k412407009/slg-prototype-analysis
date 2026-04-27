@@ -1,0 +1,59 @@
+{
+  "project_id": 671,
+  "project_name": "dingkx-slg",
+  "custom_domain": "dingkx-slg",
+  "url": "https://dingkx-slg.run.ingarena.net",
+  "container_port": 8000,
+  "host_port": 9008,
+  "start_cmd": "python3 -m http.server 8000 --bind 0.0.0.0",
+  "kind": "static",
+  "entry_rename": {
+    "steam原型数据分析.html": "index.html"
+  },
+  "ssh_port": 22007,
+  "ssh_username": "project_user_671",
+  "ssh_password": "lT7m57%lGZ#H",
+  "history": [
+    {
+      "at": "2026-04-18T07:18:25+00:00",
+      "event": "migrated",
+      "note": "初次部署在 run-platform-deploy skill 之前完成,此为迁移记录"
+    },
+    {
+      "at": "2026-04-18T07:57:11+00:00",
+      "event": "deploy",
+      "files": 3,
+      "zip_bytes": 0
+    },
+    {
+      "at": "2026-04-18T07:57:57+00:00",
+      "event": "deploy",
+      "files": 3,
+      "zip_bytes": 17152
+    },
+    {
+      "at": "2026-04-20T17:37:18+00:00",
+      "event": "deploy",
+      "files": 15,
+      "zip_bytes": 128881
+    },
+    {
+      "at": "2026-04-20T17:37:23+00:00",
+      "event": "deploy",
+      "files": 15,
+      "zip_bytes": 128881
+    },
+    {
+      "at": "2026-04-20T17:50:31+00:00",
+      "event": "deploy",
+      "files": 15,
+      "zip_bytes": 128881
+    },
+    {
+      "at": "2026-04-26T14:16:35+00:00",
+      "event": "deploy",
+      "files": 15,
+      "zip_bytes": 128880
+    }
+  ]
+}

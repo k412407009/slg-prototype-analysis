@@ -1,0 +1,3364 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>轻量化SLG海外赛道 · Steam原型数据分析（真实数据版）</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+    color: #e8e8e8;
+    padding: 30px 20px;
+    min-height: 100vh;
+    line-height: 1.55;
+  }
+  .container { max-width: 1400px; margin: 0 auto; }
+  header {
+    text-align: center;
+    margin-bottom: 40px;
+    padding-bottom: 30px;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+  }
+  h1 {
+    font-size: 2.2em;
+    font-weight: 600;
+    margin-bottom: 10px;
+    background: linear-gradient(90deg, #ffd700, #ff6b6b);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .subtitle { color: #9ca3af; font-size: 1em; margin-top: 8px; }
+  .data-disclaimer {
+    display: inline-block;
+    margin-top: 12px;
+    padding: 6px 14px;
+    background: rgba(34, 197, 94, 0.12);
+    border: 1px solid rgba(34, 197, 94, 0.3);
+    border-radius: 20px;
+    color: #86efac;
+    font-size: 0.82em;
+  }
+
+  .summary-bar {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 16px;
+    margin-bottom: 36px;
+  }
+  .stat-card {
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 12px;
+    padding: 18px;
+    text-align: center;
+  }
+  .stat-card .label { color: #9ca3af; font-size: 0.85em; margin-bottom: 8px; }
+  .stat-card .value { font-size: 1.5em; font-weight: 700; color: #ffd700; }
+  .stat-card .sub { color: #6b7280; font-size: 0.78em; margin-top: 4px; }
+
+  .section-title {
+    font-size: 1.4em;
+    font-weight: 600;
+    margin: 36px 0 18px;
+    padding-left: 14px;
+    border-left: 4px solid #ffd700;
+    color: #ffd700;
+  }
+
+  .legend-bar {
+    display: flex;
+    gap: 14px;
+    flex-wrap: wrap;
+    margin-bottom: 20px;
+    padding: 14px 18px;
+    background: rgba(255,255,255,0.03);
+    border-radius: 10px;
+    font-size: 0.88em;
+  }
+  .legend-item { display: flex; align-items: center; gap: 6px; color: #d1d5db; }
+  .legend-swatch {
+    width: 14px; height: 14px; border-radius: 4px;
+    border: 1px solid rgba(255,255,255,0.2);
+  }
+
+  .proto-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(440px, 1fr));
+    gap: 22px;
+    margin-bottom: 36px;
+  }
+  .proto-card {
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 14px;
+    padding: 22px;
+    position: relative;
+    transition: transform 0.2s, box-shadow 0.2s;
+  }
+  .proto-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 32px rgba(0,0,0,0.4);
+  }
+  .proto-card.tier-recommended {
+    background: rgba(34, 197, 94, 0.08);
+    border-color: rgba(34, 197, 94, 0.35);
+  }
+  .proto-card.tier-caution {
+    background: rgba(234, 179, 8, 0.08);
+    border-color: rgba(234, 179, 8, 0.35);
+  }
+  .proto-card.tier-avoid {
+    background: rgba(239, 68, 68, 0.06);
+    border-color: rgba(239, 68, 68, 0.25);
+  }
+
+  .tier-badge {
+    position: absolute;
+    top: 14px;
+    right: 14px;
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-size: 0.75em;
+    font-weight: 600;
+  }
+  .tier-badge.recommended {
+    background: rgba(34, 197, 94, 0.2);
+    color: #86efac;
+    border: 1px solid rgba(34, 197, 94, 0.4);
+  }
+  .tier-badge.caution {
+    background: rgba(234, 179, 8, 0.2);
+    color: #fde047;
+    border: 1px solid rgba(234, 179, 8, 0.4);
+  }
+  .tier-badge.avoid {
+    background: rgba(239, 68, 68, 0.18);
+    color: #fca5a5;
+    border: 1px solid rgba(239, 68, 68, 0.4);
+  }
+
+  .proto-header {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 14px;
+    padding-right: 90px;
+  }
+  .proto-icon {
+    width: 64px;
+    height: 64px;
+    border-radius: 10px;
+    object-fit: cover;
+    border: 1px solid rgba(255,255,255,0.2);
+    flex-shrink: 0;
+    background: rgba(0,0,0,0.3);
+  }
+  .proto-title-wrap { flex: 1; min-width: 0; }
+  .proto-title {
+    font-size: 1.2em;
+    font-weight: 600;
+    color: #fff;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+  .proto-title a {
+    color: #fff;
+    text-decoration: none;
+    border-bottom: 1px dashed rgba(255,255,255,0.3);
+    transition: color 0.2s, border-color 0.2s;
+  }
+  .proto-title a:hover {
+    color: #ffd700;
+    border-color: #ffd700;
+  }
+  .proto-subtitle { color: #9ca3af; font-size: 0.85em; margin-top: 4px; }
+  .proto-scheme-tag {
+    display: inline-block;
+    margin-top: 6px;
+    padding: 3px 8px;
+    background: rgba(255, 215, 0, 0.12);
+    color: #fde047;
+    border-radius: 6px;
+    font-size: 0.78em;
+    line-height: 1.4;
+  }
+
+  .proto-metrics {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 8px;
+    margin-bottom: 14px;
+    padding: 12px;
+    background: rgba(0,0,0,0.2);
+    border-radius: 8px;
+  }
+  .metric { text-align: center; }
+  .metric .k { display: block; color: #9ca3af; font-size: 0.72em; margin-bottom: 4px; }
+  .metric .v { display: block; color: #fff; font-size: 0.95em; font-weight: 600; }
+  .metric .v.highlight { color: #ffd700; }
+  .metric .v.danger { color: #fca5a5; }
+
+  .rating-bar {
+    background: rgba(255,255,255,0.1);
+    border-radius: 20px;
+    height: 8px;
+    overflow: hidden;
+    margin-bottom: 6px;
+  }
+  .rating-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #22c55e, #16a34a);
+  }
+  .rating-fill.mixed { background: linear-gradient(90deg, #eab308, #ca8a04); }
+  .rating-fill.poor { background: linear-gradient(90deg, #ef4444, #dc2626); }
+  .rating-text { color: #9ca3af; font-size: 0.78em; margin-bottom: 12px; }
+
+  .chart-wrap {
+    height: 220px;
+    margin: 12px 0;
+    position: relative;
+  }
+
+  .proto-analysis {
+    margin-top: 14px;
+    padding: 12px 14px;
+    background: rgba(0,0,0,0.25);
+    border-radius: 8px;
+    font-size: 0.88em;
+  }
+  .proto-analysis .analysis-title {
+    color: #ffd700;
+    font-weight: 600;
+    margin-bottom: 8px;
+    font-size: 0.92em;
+  }
+  .proto-analysis ul { list-style: none; padding: 0; }
+  .proto-analysis li {
+    padding: 4px 0 4px 18px;
+    position: relative;
+    color: #d1d5db;
+  }
+  .proto-analysis li::before {
+    content: "▸";
+    position: absolute;
+    left: 4px;
+    color: #ffd700;
+  }
+  .proto-analysis li.positive::before { color: #86efac; }
+  .proto-analysis li.warning::before { color: #fde047; }
+  .proto-analysis li.negative::before { color: #fca5a5; }
+
+  .cross-ref {
+    margin-top: 10px;
+    padding: 8px 12px;
+    background: rgba(59, 130, 246, 0.08);
+    border-left: 3px solid rgba(59, 130, 246, 0.5);
+    border-radius: 4px;
+    font-size: 0.8em;
+    color: #bfdbfe;
+  }
+  .cross-ref a { color: #93c5fd; text-decoration: underline; }
+  .cross-ref a:hover { color: #dbeafe; }
+
+  .direction-block {
+    margin: 24px 0;
+    padding: 20px 24px;
+    background: rgba(255,255,255,0.03);
+    border-radius: 12px;
+    border-left: 4px solid #ffd700;
+  }
+  .direction-block.recommended {
+    border-left-color: #22c55e;
+    background: rgba(34, 197, 94, 0.06);
+  }
+  .direction-block.caution {
+    border-left-color: #eab308;
+    background: rgba(234, 179, 8, 0.06);
+  }
+  .direction-title {
+    font-size: 1.15em;
+    font-weight: 600;
+    color: #fff;
+    margin-bottom: 10px;
+  }
+  .direction-subtitle {
+    color: #9ca3af;
+    font-size: 0.88em;
+    margin-bottom: 12px;
+  }
+  .direction-body { color: #d1d5db; font-size: 0.9em; }
+  .direction-body p { margin-bottom: 8px; }
+  .direction-body strong { color: #ffd700; }
+
+  .insight-card {
+    margin-top: 30px;
+    padding: 24px;
+    background: linear-gradient(135deg, rgba(255, 107, 107, 0.12), rgba(255, 215, 0, 0.08));
+    border: 1px solid rgba(255, 215, 0, 0.3);
+    border-radius: 14px;
+  }
+  .insight-title {
+    font-size: 1.3em;
+    font-weight: 600;
+    color: #ffd700;
+    margin-bottom: 14px;
+  }
+  .insight-card ul { padding-left: 20px; }
+  .insight-card li {
+    color: #e8e8e8;
+    margin-bottom: 8px;
+    line-height: 1.6;
+  }
+  .insight-card strong { color: #ffd700; }
+
+  .data-source-box {
+    margin-top: 36px;
+    padding: 18px 22px;
+    background: rgba(0,0,0,0.3);
+    border: 1px dashed rgba(255,255,255,0.15);
+    border-radius: 10px;
+    font-size: 0.82em;
+    color: #9ca3af;
+  }
+  .data-source-box h3 {
+    color: #ffd700;
+    font-size: 1em;
+    margin-bottom: 10px;
+  }
+  .data-source-box a { color: #93c5fd; text-decoration: none; }
+  .data-source-box a:hover { color: #dbeafe; text-decoration: underline; }
+  .data-source-box .cite-list { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 6px 20px; }
+
+  /* ===== Review Ribbon（原型 / 方向卡片底部的评审徽章） ===== */
+  .review-ribbon {
+    margin-top: 12px;
+    padding: 10px 14px;
+    background: rgba(255, 215, 0, 0.05);
+    border-left: 3px solid rgba(255, 215, 0, 0.45);
+    border-radius: 4px;
+    font-size: 0.82em;
+    color: #d1d5db;
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 6px 14px;
+    align-items: baseline;
+  }
+  .review-ribbon.pass {
+    background: rgba(34, 197, 94, 0.06);
+    border-left-color: rgba(34, 197, 94, 0.55);
+  }
+  .review-ribbon.reject {
+    background: rgba(239, 68, 68, 0.06);
+    border-left-color: rgba(239, 68, 68, 0.55);
+  }
+  .review-ribbon .rr-label {
+    color: #9ca3af;
+    font-size: 0.88em;
+    white-space: nowrap;
+  }
+  .review-ribbon .rr-value { color: #e8e8e8; }
+  .review-ribbon .rr-score {
+    color: #ffd700;
+    font-weight: 700;
+    font-size: 1.05em;
+  }
+  .review-ribbon .rr-verdict {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-size: 0.82em;
+    font-weight: 600;
+  }
+  .review-ribbon .rr-verdict.pass {
+    background: rgba(234, 179, 8, 0.18);
+    color: #fde047;
+    border: 1px solid rgba(234, 179, 8, 0.35);
+  }
+  .review-ribbon .rr-verdict.reject {
+    background: rgba(239, 68, 68, 0.18);
+    color: #fca5a5;
+    border: 1px solid rgba(239, 68, 68, 0.45);
+  }
+  .review-ribbon .rr-p0-list {
+    margin-top: 4px;
+    padding-left: 0;
+    list-style: none;
+    color: #d1d5db;
+    font-size: 0.95em;
+    line-height: 1.55;
+  }
+  .review-ribbon .rr-p0-list li {
+    padding: 2px 0 2px 16px;
+    position: relative;
+  }
+  .review-ribbon .rr-p0-list li::before {
+    content: "▸";
+    position: absolute;
+    left: 0;
+    color: #fde047;
+  }
+  .review-ribbon .rr-link {
+    color: #93c5fd;
+    text-decoration: none;
+    border-bottom: 1px dashed rgba(147, 197, 253, 0.4);
+  }
+  .review-ribbon .rr-link:hover { color: #dbeafe; border-color: #dbeafe; }
+
+  /* ===== 第四部分：立项评审进展 ===== */
+  .review-board-wrap {
+    margin: 24px 0 36px;
+    padding: 22px;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255, 215, 0, 0.18);
+    border-radius: 14px;
+  }
+  .review-board-intro {
+    color: #d1d5db;
+    font-size: 0.92em;
+    margin-bottom: 18px;
+    line-height: 1.6;
+  }
+  .review-board-intro strong { color: #ffd700; }
+
+  .verdict-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+    gap: 14px;
+    margin-bottom: 20px;
+  }
+  .verdict-card {
+    padding: 14px 16px;
+    background: rgba(0,0,0,0.25);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 10px;
+    position: relative;
+  }
+  .verdict-card.pass { border-color: rgba(234, 179, 8, 0.4); background: rgba(234, 179, 8, 0.06); }
+  .verdict-card.reject { border-color: rgba(239, 68, 68, 0.45); background: rgba(239, 68, 68, 0.08); }
+  .verdict-card .vc-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 8px;
+  }
+  .verdict-card .vc-name {
+    color: #fff;
+    font-weight: 600;
+    font-size: 0.95em;
+  }
+  .verdict-card .vc-score {
+    color: #ffd700;
+    font-weight: 700;
+    font-size: 1.1em;
+  }
+  .verdict-card .vc-bar {
+    background: rgba(255,255,255,0.08);
+    border-radius: 10px;
+    height: 6px;
+    overflow: hidden;
+    margin-bottom: 8px;
+  }
+  .verdict-card .vc-bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #22c55e, #84cc16);
+  }
+  .verdict-card.pass .vc-bar-fill { background: linear-gradient(90deg, #eab308, #f59e0b); }
+  .verdict-card.reject .vc-bar-fill { background: linear-gradient(90deg, #ef4444, #dc2626); }
+  .verdict-card .vc-verdict {
+    color: #9ca3af;
+    font-size: 0.78em;
+  }
+  .verdict-card .vc-verdict strong { color: #e8e8e8; }
+  .verdict-card .vc-p0 {
+    margin-top: 6px;
+    color: #9ca3af;
+    font-size: 0.78em;
+  }
+  .verdict-card .vc-p0 strong { color: #fde047; }
+
+  .common-issues-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: rgba(0,0,0,0.2);
+    border-radius: 10px;
+    overflow: hidden;
+    font-size: 0.87em;
+    margin-top: 6px;
+  }
+  .common-issues-table th,
+  .common-issues-table td {
+    padding: 10px 12px;
+    text-align: left;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+    vertical-align: top;
+  }
+  .common-issues-table th {
+    background: rgba(255, 215, 0, 0.1);
+    color: #ffd700;
+    font-weight: 600;
+  }
+  .common-issues-table td code {
+    display: inline-block;
+    padding: 1px 6px;
+    margin: 0 2px 2px 0;
+    background: rgba(59, 130, 246, 0.12);
+    border-radius: 4px;
+    color: #bfdbfe;
+    font-size: 0.88em;
+    font-family: inherit;
+  }
+  /* ===== 7 维度 × 6 项目完整评分矩阵（v4.2: 9→7 精简） ===== */
+  .dim-matrix-wrap {
+    margin: 20px 0 24px;
+    overflow-x: auto;
+    background: rgba(0,0,0,0.25);
+    border-radius: 10px;
+    padding: 16px 14px;
+    border: 1px solid rgba(255,255,255,0.06);
+  }
+  .dim-matrix-wrap .matrix-title {
+    color: #ffd700;
+    font-size: 1.02em;
+    font-weight: 600;
+    margin-bottom: 6px;
+  }
+  .dim-matrix-wrap .matrix-subtitle {
+    color: #9ca3af;
+    font-size: 0.82em;
+    margin-bottom: 14px;
+  }
+  .dim-matrix-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    font-size: 0.83em;
+    table-layout: fixed;
+    min-width: 720px;
+  }
+  .dim-matrix-table th,
+  .dim-matrix-table td {
+    padding: 8px 6px;
+    text-align: center;
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+  }
+  .dim-matrix-table thead th {
+    background: rgba(255, 215, 0, 0.08);
+    color: #ffd700;
+    font-weight: 600;
+    font-size: 0.85em;
+    position: sticky;
+    top: 0;
+  }
+  .dim-matrix-table th.dim-col {
+    text-align: left;
+    padding-left: 12px;
+    color: #e8e8e8;
+    width: 26%;
+  }
+  .dim-matrix-table td.dim-name {
+    text-align: left;
+    padding-left: 12px;
+    color: #d1d5db;
+    font-weight: 500;
+  }
+  .dim-matrix-table td.dim-score {
+    font-variant-numeric: tabular-nums;
+    font-weight: 600;
+    color: #e8e8e8;
+  }
+  .dim-matrix-table td.dim-score.hi  { color: #4ade80; background: rgba(34, 197, 94, 0.08); }
+  .dim-matrix-table td.dim-score.mid { color: #fde047; }
+  .dim-matrix-table td.dim-score.lo  { color: #fca5a5; background: rgba(239, 68, 68, 0.08); }
+  .dim-matrix-table tfoot td {
+    background: rgba(255, 215, 0, 0.06);
+    font-weight: 700;
+    color: #ffd700;
+    font-size: 0.95em;
+    border-top: 2px solid rgba(255, 215, 0, 0.25);
+  }
+  .dim-matrix-table td.dim-star::after {
+    content: "\2B50";
+    margin-left: 3px;
+    font-size: 0.7em;
+  }
+  .dim-matrix-table td.dim-warn::after {
+    content: "\26A0\FE0F";
+    margin-left: 3px;
+    font-size: 0.7em;
+  }
+  /* PPT 文档名超链接（点击跳 Google Slides，需企业账户权限）*/
+  .proj-link {
+    color: inherit;
+    text-decoration: none;
+    border-bottom: 1px dashed rgba(255, 215, 0, 0.45);
+    transition: color 0.15s, border-color 0.15s, background 0.15s;
+    padding-bottom: 1px;
+  }
+  .proj-link:hover {
+    color: #ffd700;
+    border-bottom-color: #ffd700;
+  }
+  .proj-link::after {
+    content: " \2197";
+    font-size: 0.72em;
+    opacity: 0.6;
+    margin-left: 2px;
+  }
+  .proj-link.muted {
+    border-bottom-color: rgba(252, 165, 165, 0.45);
+  }
+  .proj-link.muted:hover {
+    color: #fca5a5;
+    border-bottom-color: #fca5a5;
+  }
+  /* v4.2 决策一览 Summary 表格 */
+  .summary-table-wrap {
+    margin: 4px 0 24px;
+    overflow-x: auto;
+    background: rgba(0,0,0,0.28);
+    border-radius: 10px;
+    padding: 18px 16px 14px;
+    border: 1px solid rgba(255, 215, 0, 0.18);
+  }
+  .summary-table-wrap .st-title {
+    color: #ffd700;
+    font-size: 1.02em;
+    font-weight: 600;
+    margin-bottom: 4px;
+  }
+  .summary-table-wrap .st-subtitle {
+    color: #9ca3af;
+    font-size: 0.82em;
+    margin-bottom: 14px;
+  }
+  .summary-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    font-size: 0.87em;
+    min-width: 900px;
+    table-layout: fixed;
+  }
+  .summary-table th,
+  .summary-table td {
+    padding: 10px 10px;
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+    vertical-align: middle;
+  }
+  .summary-table thead th {
+    background: rgba(255, 215, 0, 0.1);
+    color: #ffd700;
+    font-weight: 600;
+    text-align: center;
+    font-size: 0.88em;
+  }
+  .summary-table tbody tr.reject-row { background: rgba(239, 68, 68, 0.05); }
+  .summary-table .st-rank {
+    text-align: center;
+    font-weight: 700;
+    color: #ffd700;
+    font-size: 1.15em;
+    width: 7%;
+  }
+  .summary-table .st-rank .st-delta {
+    display: block;
+    font-size: 0.65em;
+    margin-top: 2px;
+    color: #86efac;
+    font-weight: 600;
+  }
+  .summary-table .st-rank .st-delta.down { color: #fca5a5; }
+  .summary-table .st-name {
+    width: 24%;
+    font-weight: 600;
+    color: #e8e8e8;
+  }
+  .summary-table .st-name .st-name-sub {
+    display: block;
+    color: #9ca3af;
+    font-weight: 400;
+    font-size: 0.82em;
+    margin-top: 2px;
+  }
+  .summary-table .st-score {
+    text-align: center;
+    width: 8%;
+    font-variant-numeric: tabular-nums;
+    font-weight: 700;
+    color: #ffd700;
+    font-size: 1.05em;
+  }
+  .summary-table .st-oldscore {
+    text-align: center;
+    width: 9%;
+    font-variant-numeric: tabular-nums;
+    color: #9ca3af;
+    font-size: 0.85em;
+  }
+  .summary-table .st-verdict {
+    text-align: center;
+    width: 13%;
+    font-weight: 600;
+  }
+  .summary-table .st-verdict.pass { color: #fde047; }
+  .summary-table .st-verdict.reject { color: #fca5a5; }
+  .summary-table .st-highlight,
+  .summary-table .st-weak {
+    font-size: 0.88em;
+    color: #d1d5db;
+    line-height: 1.45;
+  }
+  .summary-table .st-highlight { width: 18%; }
+  .summary-table .st-weak { width: 18%; color: #fca5a5; }
+  .summary-table .st-p0 {
+    text-align: center;
+    width: 7%;
+    font-variant-numeric: tabular-nums;
+    font-weight: 700;
+    color: #fde047;
+    font-size: 1.05em;
+  }
+  .matrix-legend {
+    margin-top: 10px;
+    font-size: 0.78em;
+    color: #9ca3af;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+  }
+  .matrix-legend-item { display: flex; align-items: center; gap: 6px; }
+  .matrix-legend-sw {
+    display: inline-block;
+    width: 12px; height: 12px; border-radius: 3px;
+    border: 1px solid rgba(255,255,255,0.15);
+  }
+  .priority-list {
+    margin-top: 16px;
+    padding: 12px 18px;
+    background: rgba(34, 197, 94, 0.05);
+    border-left: 3px solid rgba(34, 197, 94, 0.4);
+    border-radius: 6px;
+    font-size: 0.88em;
+    color: #d1d5db;
+  }
+  .priority-list ol { padding-left: 22px; }
+  .priority-list li { padding: 4px 0; }
+  .priority-list strong { color: #86efac; }
+
+
+  /* ================================================================
+     v4.5 Figma-inspired design tokens + Tab 系统 + 原则卡 + P0 自检
+     ================================================================ */
+  :root {
+    --surface-1: rgba(255, 255, 255, 0.04);
+    --surface-2: rgba(255, 255, 255, 0.06);
+    --surface-3: rgba(255, 255, 255, 0.08);
+    --border-subtle: rgba(255, 255, 255, 0.08);
+    --border-regular: rgba(255, 255, 255, 0.12);
+    --border-emph: rgba(255, 215, 0, 0.4);
+    --text-primary: #e8e8e8;
+    --text-secondary: #d1d5db;
+    --text-muted: #9ca3af;
+    --text-faint: #6b7280;
+    --accent-gold: #ffd700;
+    --accent-coral: #ff6b6b;
+    --accent-mint: #86efac;
+    --accent-amber: #fde047;
+    --accent-rose: #fca5a5;
+    --g-warm: linear-gradient(135deg, #ffd700 0%, #ff6b6b 100%);
+    --g-cool: linear-gradient(135deg, #60a5fa 0%, #a78bfa 100%);
+    --g-mint: linear-gradient(135deg, #34d399 0%, #06b6d4 100%);
+    --g-amber: linear-gradient(135deg, #fbbf24 0%, #f97316 100%);
+    --motion-ease: cubic-bezier(0.19, 1, 0.22, 1);
+    --motion-fast: 180ms;
+    --motion-med: 280ms;
+    --motion-slow: 420ms;
+    --radius-sm: 8px;
+    --radius-md: 14px;
+    --radius-lg: 20px;
+    --elev-1: 0 4px 12px rgba(0, 0, 0, 0.25);
+    --elev-2: 0 12px 32px rgba(0, 0, 0, 0.35);
+    --elev-3: 0 24px 56px rgba(0, 0, 0, 0.45);
+  }
+
+  /* ===== Sticky Top Tabs ===== */
+  .top-tabs {
+    position: sticky;
+    top: 0;
+    z-index: 80;
+    margin: 0 -20px 28px;
+    padding: 12px 20px;
+    background: linear-gradient(180deg, rgba(10, 14, 28, 0.92) 0%, rgba(10, 14, 28, 0.76) 100%);
+    backdrop-filter: blur(20px) saturate(150%);
+    -webkit-backdrop-filter: blur(20px) saturate(150%);
+    border-bottom: 1px solid var(--border-subtle);
+    box-shadow: var(--elev-1);
+  }
+  .top-tabs-inner {
+    max-width: 1400px;
+    margin: 0 auto;
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+  .tab-btn {
+    flex: 1 1 180px;
+    min-width: 168px;
+    background: var(--surface-1);
+    border: 1px solid var(--border-regular);
+    border-radius: var(--radius-md);
+    padding: 12px 16px;
+    color: var(--text-secondary);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    transition: all var(--motion-med) var(--motion-ease);
+    text-align: left;
+    font-family: inherit;
+    position: relative;
+    overflow: hidden;
+  }
+  .tab-btn::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(240px circle at var(--x, 50%) var(--y, 50%), rgba(255, 215, 0, 0.12), transparent 60%);
+    opacity: 0;
+    transition: opacity var(--motion-fast);
+    pointer-events: none;
+  }
+  .tab-btn:hover::after { opacity: 1; }
+  .tab-btn:hover {
+    transform: translateY(-1px);
+    background: var(--surface-2);
+    border-color: var(--border-emph);
+    box-shadow: var(--elev-1);
+  }
+  .tab-btn.active {
+    background: linear-gradient(135deg, rgba(255, 215, 0, 0.14) 0%, rgba(255, 107, 107, 0.10) 100%);
+    border-color: rgba(255, 215, 0, 0.55);
+    box-shadow: 0 0 0 1px rgba(255, 215, 0, 0.2), 0 12px 28px rgba(255, 215, 0, 0.08);
+  }
+  .tab-btn.active .tab-label {
+    background: var(--g-warm);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    font-weight: 700;
+  }
+  .tab-ico {
+    font-size: 1.6em;
+    line-height: 1;
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
+  }
+  .tab-text { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+  .tab-label { font-size: 0.96em; font-weight: 600; line-height: 1.2; }
+  .tab-sub { font-size: 0.72em; color: var(--text-muted); line-height: 1.2; }
+
+  /* ===== Tab Panels ===== */
+  .tab-panel { display: none; }
+  .tab-panel.active {
+    display: block;
+    animation: tabFadeIn var(--motion-slow) var(--motion-ease) both;
+  }
+  @keyframes tabFadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to   { opacity: 1; transform: translateY(0);    }
+  }
+
+  /* ===== Tab 3: 设计原则卡片 ===== */
+  .principles-intro {
+    padding: 22px 24px;
+    background: linear-gradient(135deg, rgba(139, 92, 246, 0.08) 0%, rgba(59, 130, 246, 0.06) 100%);
+    border: 1px solid rgba(139, 92, 246, 0.25);
+    border-radius: var(--radius-lg);
+    margin-bottom: 24px;
+  }
+  .principles-intro-title {
+    font-size: 1.15em;
+    font-weight: 700;
+    background: var(--g-cool);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin-bottom: 10px;
+  }
+  .principles-intro p { color: var(--text-secondary); font-size: 0.92em; line-height: 1.75; margin-bottom: 10px; }
+  .common-problems-mini {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 10px;
+    margin-top: 14px;
+  }
+  .cp-card {
+    padding: 10px 14px;
+    background: rgba(0, 0, 0, 0.22);
+    border: 1px solid var(--border-subtle);
+    border-radius: 10px;
+  }
+  .cp-name { color: var(--accent-amber); font-size: 0.85em; font-weight: 600; margin-bottom: 4px; }
+  .cp-freq { color: var(--text-muted); font-size: 0.78em; }
+  .cp-freq .hot { color: var(--accent-coral); font-weight: 700; }
+
+  .principles-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+    gap: 18px;
+    margin-bottom: 32px;
+  }
+  .principle-card {
+    position: relative;
+    padding: 22px 22px 18px;
+    background: var(--surface-1);
+    border: 1px solid var(--border-regular);
+    border-radius: var(--radius-lg);
+    transition: all var(--motion-med) var(--motion-ease);
+    overflow: hidden;
+  }
+  .principle-card::before {
+    content: "";
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    background: var(--principle-accent, var(--g-warm));
+    opacity: 0.85;
+  }
+  .principle-card::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: var(--principle-accent, var(--g-warm));
+    opacity: 0;
+    transition: opacity var(--motion-med) var(--motion-ease);
+    pointer-events: none;
+    mix-blend-mode: overlay;
+  }
+  .principle-card:hover {
+    transform: translateY(-3px);
+    background: var(--surface-2);
+    box-shadow: var(--elev-2);
+    border-color: rgba(255, 215, 0, 0.3);
+  }
+  .principle-card:hover::after { opacity: 0.06; }
+  .principle-num {
+    position: absolute;
+    top: 12px; right: 18px;
+    font-size: 3em;
+    font-weight: 900;
+    background: var(--principle-accent, var(--g-warm));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    line-height: 1;
+    opacity: 0.35;
+    pointer-events: none;
+    letter-spacing: -2px;
+  }
+  .principle-title-cn { font-size: 1.12em; font-weight: 700; color: var(--accent-gold); margin-bottom: 3px; padding-right: 60px; }
+  .principle-title-en { font-size: 0.78em; color: var(--text-muted); margin-bottom: 14px; font-family: "SF Mono", "Menlo", Consolas, monospace; letter-spacing: 0.3px; }
+  .principle-desc { color: var(--text-secondary); font-size: 0.9em; line-height: 1.72; margin-bottom: 14px; }
+  .principle-do {
+    background: rgba(34, 197, 94, 0.10);
+    border-left: 2.5px solid rgba(34, 197, 94, 0.7);
+    border-radius: 0 10px 10px 0;
+    padding: 10px 14px;
+    color: #86efac;
+    font-size: 0.83em;
+    line-height: 1.65;
+    margin-bottom: 10px;
+  }
+  .principle-dont {
+    background: rgba(239, 68, 68, 0.06);
+    border-left: 2.5px solid rgba(239, 68, 68, 0.5);
+    border-radius: 0 10px 10px 0;
+    padding: 10px 14px;
+    color: #fca5a5;
+    font-size: 0.83em;
+    line-height: 1.65;
+    margin-bottom: 14px;
+  }
+  .principle-do strong, .principle-dont strong { color: inherit; }
+  .principle-tags { display: flex; flex-wrap: wrap; gap: 6px; }
+  .principle-tag {
+    padding: 3px 10px;
+    background: rgba(255, 215, 0, 0.08);
+    border: 1px solid rgba(255, 215, 0, 0.28);
+    border-radius: 12px;
+    font-size: 0.72em;
+    color: var(--accent-amber);
+    font-weight: 500;
+    letter-spacing: 0.2px;
+  }
+
+  /* ===== Tab 4: P0 自检表（交互式） ===== */
+  .checklist-header {
+    padding: 20px 22px;
+    background: linear-gradient(135deg, rgba(34, 197, 94, 0.06) 0%, rgba(168, 85, 247, 0.06) 100%);
+    border: 1px solid rgba(34, 197, 94, 0.25);
+    border-radius: var(--radius-lg);
+    margin-bottom: 16px;
+  }
+  .checklist-header-title { font-size: 1.2em; font-weight: 700; color: var(--accent-mint); margin-bottom: 8px; }
+  .checklist-header p { color: var(--text-secondary); font-size: 0.88em; line-height: 1.7; margin-bottom: 6px; }
+  .checklist-header .hl-amber { color: var(--accent-amber); font-weight: 600; }
+
+  .checklist-dashboard {
+    position: sticky;
+    top: 96px;
+    z-index: 30;
+    background: rgba(18, 24, 38, 0.92);
+    backdrop-filter: blur(16px) saturate(140%);
+    -webkit-backdrop-filter: blur(16px) saturate(140%);
+    border: 1px solid var(--border-regular);
+    border-radius: var(--radius-lg);
+    padding: 18px 22px;
+    margin-bottom: 22px;
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    gap: 22px;
+    align-items: center;
+    box-shadow: var(--elev-2);
+  }
+  .dashboard-dial {
+    width: 120px;
+    height: 120px;
+    position: relative;
+    flex-shrink: 0;
+  }
+  .dial-svg {
+    width: 100%;
+    height: 100%;
+    transform: rotate(-90deg);
+  }
+  .dial-bg { fill: none; stroke: rgba(255, 255, 255, 0.08); stroke-width: 10; }
+  .dial-fill {
+    fill: none;
+    stroke: url(#dialGrad);
+    stroke-width: 10;
+    stroke-linecap: round;
+    transition: stroke-dasharray 0.6s var(--motion-ease);
+  }
+  .dial-label {
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    text-align: center;
+    pointer-events: none;
+  }
+  .dial-label .count {
+    font-size: 2em;
+    font-weight: 800;
+    background: var(--g-warm);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    line-height: 1;
+    display: block;
+  }
+  .dial-label .total { font-size: 0.72em; color: var(--text-muted); letter-spacing: 0.5px; }
+
+  .dashboard-verdict-wrap { display: flex; flex-direction: column; gap: 6px; }
+  .verdict-badge {
+    display: inline-block;
+    padding: 8px 18px;
+    border-radius: 24px;
+    font-weight: 700;
+    font-size: 0.95em;
+    letter-spacing: 0.3px;
+    align-self: flex-start;
+    transition: all var(--motion-med);
+  }
+  .verdict-badge.pass { background: rgba(34, 197, 94, 0.18); border: 1px solid rgba(34, 197, 94, 0.5); color: var(--accent-mint); }
+  .verdict-badge.cond { background: rgba(234, 179, 8, 0.18); border: 1px solid rgba(234, 179, 8, 0.5); color: var(--accent-amber); }
+  .verdict-badge.rej  { background: rgba(239, 68, 68, 0.15); border: 1px solid rgba(239, 68, 68, 0.5); color: var(--accent-rose); }
+  .verdict-badge.none { background: rgba(255, 255, 255, 0.05); border: 1px solid var(--border-regular); color: var(--text-muted); }
+  .verdict-breakdown { color: var(--text-muted); font-size: 0.82em; line-height: 1.7; }
+  .verdict-breakdown strong { padding: 0 2px; }
+
+  .dashboard-actions { display: flex; flex-direction: column; gap: 8px; }
+  .dash-btn {
+    padding: 8px 16px;
+    border-radius: 10px;
+    cursor: pointer;
+    border: 1px solid var(--border-regular);
+    background: var(--surface-1);
+    color: var(--text-secondary);
+    font-size: 0.82em;
+    font-family: inherit;
+    transition: all var(--motion-fast);
+    white-space: nowrap;
+  }
+  .dash-btn:hover { background: var(--surface-3); border-color: var(--accent-gold); color: var(--accent-gold); }
+  .dash-btn.danger:hover { border-color: rgba(239, 68, 68, 0.5); color: var(--accent-rose); }
+
+  .check-group {
+    background: var(--surface-1);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-lg);
+    padding: 20px 22px;
+    margin-bottom: 16px;
+  }
+  .check-group-head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    margin-bottom: 4px;
+    gap: 14px;
+    flex-wrap: wrap;
+  }
+  .check-group-title { font-size: 1.02em; font-weight: 600; color: var(--accent-amber); }
+  .check-group-stat {
+    font-size: 0.78em;
+    color: var(--text-muted);
+    padding: 2px 10px;
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 10px;
+  }
+  .check-group-desc { color: var(--text-muted); font-size: 0.82em; margin-bottom: 14px; line-height: 1.6; }
+
+  .check-item {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 14px;
+    padding: 14px 16px;
+    background: var(--surface-1);
+    border: 1px solid var(--border-subtle);
+    border-radius: 12px;
+    margin-bottom: 10px;
+    transition: all var(--motion-med) var(--motion-ease);
+    align-items: flex-start;
+  }
+  .check-item:hover { background: var(--surface-2); border-color: var(--border-regular); transform: translateX(1px); }
+  .check-item.status-pass { background: rgba(34, 197, 94, 0.06); border-color: rgba(34, 197, 94, 0.35); }
+  .check-item.status-part { background: rgba(234, 179, 8, 0.06); border-color: rgba(234, 179, 8, 0.35); }
+  .check-item.status-fail { background: rgba(239, 68, 68, 0.05); border-color: rgba(239, 68, 68, 0.3); }
+
+  .check-toggle {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    min-width: 78px;
+  }
+  .check-state {
+    padding: 5px 10px;
+    border-radius: 10px;
+    font-size: 0.72em;
+    text-align: center;
+    cursor: pointer;
+    border: 1px solid var(--border-regular);
+    background: rgba(255, 255, 255, 0.02);
+    color: var(--text-muted);
+    transition: all var(--motion-fast);
+    user-select: none;
+    font-family: inherit;
+    letter-spacing: 0.2px;
+  }
+  .check-state:hover { transform: translateX(-2px); background: rgba(255, 255, 255, 0.06); }
+  .check-state.active.pass { background: rgba(34, 197, 94, 0.22); border-color: rgba(34, 197, 94, 0.6); color: var(--accent-mint); font-weight: 600; }
+  .check-state.active.part { background: rgba(234, 179, 8, 0.22); border-color: rgba(234, 179, 8, 0.6); color: var(--accent-amber); font-weight: 600; }
+  .check-state.active.fail { background: rgba(239, 68, 68, 0.18); border-color: rgba(239, 68, 68, 0.5); color: var(--accent-rose); font-weight: 600; }
+
+  .check-body { min-width: 0; }
+  .check-title { font-size: 0.95em; color: var(--text-primary); font-weight: 600; margin-bottom: 4px; line-height: 1.5; }
+  .check-id { color: var(--accent-gold); font-weight: 700; margin-right: 8px; font-variant-numeric: tabular-nums; }
+  .check-evidence { color: var(--text-muted); font-size: 0.82em; line-height: 1.65; margin-top: 4px; }
+  .check-expand {
+    color: var(--text-faint);
+    font-size: 0.74em;
+    cursor: pointer;
+    user-select: none;
+    margin-top: 6px;
+    display: inline-block;
+    transition: color var(--motion-fast);
+    border-bottom: 1px dotted var(--text-faint);
+  }
+  .check-expand:hover { color: var(--accent-amber); border-bottom-color: var(--accent-amber); }
+  .check-details {
+    max-height: 0;
+    overflow: hidden;
+    margin-top: 0;
+    padding: 0 14px;
+    background: rgba(0, 0, 0, 0.26);
+    border-radius: 8px;
+    color: var(--text-secondary);
+    font-size: 0.82em;
+    line-height: 1.75;
+    transition: all var(--motion-med) var(--motion-ease);
+  }
+  .check-details.open { max-height: 360px; margin-top: 10px; padding: 10px 14px; }
+  .check-details .detail-line { margin-bottom: 4px; }
+  .check-details .detail-key { color: var(--accent-amber); margin-right: 6px; font-weight: 600; }
+
+  /* ===== Mobile 适配 ===== */
+  @media (max-width: 780px) {
+    .top-tabs { padding: 10px 12px; margin: 0 -20px 22px; }
+    .top-tabs-inner { gap: 8px; }
+    .tab-btn { flex: 1 1 calc(50% - 4px); min-width: 0; padding: 10px 12px; }
+    .tab-ico { font-size: 1.4em; }
+    .tab-label { font-size: 0.88em; }
+    .tab-sub { font-size: 0.68em; }
+    .checklist-dashboard {
+      grid-template-columns: 1fr;
+      text-align: center;
+      top: 76px;
+    }
+    .dashboard-dial { margin: 0 auto; }
+    .dashboard-actions { flex-direction: row; justify-content: center; }
+    .check-item { grid-template-columns: 1fr; }
+    .check-toggle { flex-direction: row; min-width: 0; justify-content: flex-start; }
+    .check-state { flex: 1; max-width: 110px; }
+  }
+
+  footer {
+    margin-top: 40px;
+    padding-top: 20px;
+    border-top: 1px solid rgba(255,255,255,0.1);
+    text-align: center;
+    color: #6b7280;
+    font-size: 0.82em;
+  }
+</style>
+</head>
+<body>
+<div class="container">
+  <header>
+    <h1>轻量化 SLG 海外赛道 · Steam 原型数据分析</h1>
+    <div class="subtitle">基于 Steam 官方评论页语言分布真实数据 · 交叉 SteamDB / SteamSpy / 行业报告 · 已同步 PPT Master 立项评审结果</div>
+    <div class="data-disclaimer">✓ 全部语言分布为 Steam 官方评论过滤器真实数据，非估算 · v4.5 · 2026-04-20 四页签版（原型数据 · 评审闭环 · 10 设计原则 · P0 交互自检）· 5 项目 19 条玩法修订 → 预期均分 4.13 → 4.35 · 下轮复审 2026-05-04</div>
+  </header>
+
+  <nav class="top-tabs" role="tablist" aria-label="页面主导航">
+    <div class="top-tabs-inner">
+      <button class="tab-btn" data-tab="home" role="tab" aria-selected="true">
+        <span class="tab-ico">🏠</span>
+        <span class="tab-text">
+          <span class="tab-label">原型数据</span>
+          <span class="tab-sub">8 款 × 44.5 万真实评论</span>
+        </span>
+      </button>
+      <button class="tab-btn" data-tab="loop" role="tab" aria-selected="false">
+        <span class="tab-ico">🧭</span>
+        <span class="tab-text">
+          <span class="tab-label">评审 → 修订闭环</span>
+          <span class="tab-sub">5 项目 · 19 条修订</span>
+        </span>
+      </button>
+      <button class="tab-btn" data-tab="principles" role="tab" aria-selected="false">
+        <span class="tab-ico">✨</span>
+        <span class="tab-text">
+          <span class="tab-label">10 条设计原则</span>
+          <span class="tab-sub">横向教训沉淀</span>
+        </span>
+      </button>
+      <button class="tab-btn" data-tab="checklist" role="tab" aria-selected="false">
+        <span class="tab-ico">✅</span>
+        <span class="tab-text">
+          <span class="tab-label">P0 立项自检</span>
+          <span class="tab-sub">23 项 · 交互式</span>
+        </span>
+      </button>
+    </div>
+  </nav>
+
+  <section class="tab-panel active" data-tab="home" role="tabpanel">
+
+  <div class="summary-bar">
+    <div class="stat-card">
+      <div class="label">核心原型</div>
+      <div class="value">8 款</div>
+      <div class="sub">覆盖 6 个题材方向</div>
+    </div>
+    <div class="stat-card">
+      <div class="label">真实评论数据</div>
+      <div class="value">44.5 万+</div>
+      <div class="sub">Steam 官方聚合</div>
+    </div>
+    <div class="stat-card">
+      <div class="label">峰值在线记录</div>
+      <div class="value">459,075</div>
+      <div class="sub">Schedule I · 2025.04</div>
+    </div>
+    <div class="stat-card">
+      <div class="label">已立项评审</div>
+      <div class="value">5 过 / 1 否</div>
+      <div class="sub">5 Conditional Pass + D 级 Reject</div>
+    </div>
+  </div>
+
+  <div class="legend-bar">
+    <div class="legend-item"><span class="legend-swatch" style="background:rgba(34,197,94,0.3);border-color:rgba(34,197,94,0.6);"></span>推荐原型（题材受众真实且宽）</div>
+    <div class="legend-item"><span class="legend-swatch" style="background:rgba(234,179,8,0.3);border-color:rgba(234,179,8,0.6);"></span>谨慎原型（有风险/受众偏窄）</div>
+    <div class="legend-item"><span class="legend-swatch" style="background:rgba(239,68,68,0.25);border-color:rgba(239,68,68,0.5);"></span>不推荐（买量合规/口碑/受众问题）</div>
+    <div class="legend-item"><span style="color:#9ca3af">※ 悬停饼图可看具体评论数</span></div>
+  </div>
+
+  <div class="section-title">一、各原型真实数据（Steam 语言分布）</div>
+
+  <div class="proto-grid">
+
+    <!-- 1. Schedule I -->
+    <div class="proto-card tier-recommended">
+      <div class="tier-badge recommended">S+ 推荐原型</div>
+      <div class="proto-header">
+        <img class="proto-icon" src="https://cdn.cloudflare.steamstatic.com/steam/apps/3164500/capsule_184x69.jpg" alt="Schedule I icon" onerror="this.src='https://cdn.cloudflare.steamstatic.com/steam/apps/3164500/header.jpg'">
+        <div class="proto-title-wrap">
+          <div class="proto-title">
+            <a href="https://store.steampowered.com/app/3164500/Schedule_I/" target="_blank">Schedule I</a>
+          </div>
+          <div class="proto-subtitle">毒枭模拟器 · 2025.03 EA · TVGS 独立开发</div>
+          <div class="proto-scheme-tag">对应方向 G：禁酒令私酒帝国（题材蒸馏后可用）</div>
+        </div>
+      </div>
+      <div class="proto-metrics">
+        <div class="metric"><span class="k">峰值在线</span><span class="v highlight">459,075</span></div>
+        <div class="metric"><span class="k">评论总数</span><span class="v">292,471</span></div>
+        <div class="metric"><span class="k">好评率</span><span class="v highlight">97%</span></div>
+        <div class="metric"><span class="k">发售价</span><span class="v">$19.99</span></div>
+      </div>
+      <div class="rating-bar"><div class="rating-fill" style="width:97%"></div></div>
+      <div class="rating-text">压倒性好评 · 286,333 条正面评价 / 6,138 条负面</div>
+      <div class="chart-wrap"><canvas id="chart-schedule1"></canvas></div>
+      <div class="proto-analysis">
+        <div class="analysis-title">核心洞察</div>
+        <ul>
+          <li class="positive">单机史级现象：峰值 45.9 万，Steam 史上独立游戏前 10</li>
+          <li class="positive">德语占比 7% (20,386) 异常高，说明欧洲文化渗透强</li>
+          <li class="negative">移动端买量合规致命：毒品题材 iOS/Google Play 审核严格（山寨品横行但原作不上移动）</li>
+          <li class="warning">结论：玩法骨架 100% 可借鉴，题材必须蒸馏为【禁酒令私酒】</li>
+        </ul>
+        <div class="cross-ref">
+          ↔ 交叉验证：<a href="https://steambase.io/games/schedule-i/steam-charts" target="_blank">Steambase</a> 确认 459,075 峰值 · <a href="https://steamspy.com/app/3164500" target="_blank">SteamSpy</a> 同步
+        </div>
+      </div>
+    </div>
+
+    <!-- 2. TCG Card Shop Simulator -->
+    <div class="proto-card tier-recommended">
+      <div class="tier-badge recommended">A 级推荐</div>
+      <div class="proto-header">
+        <img class="proto-icon" src="https://cdn.cloudflare.steamstatic.com/steam/apps/3070070/capsule_184x69.jpg" alt="TCG Card Shop icon" onerror="this.src='https://cdn.cloudflare.steamstatic.com/steam/apps/3070070/header.jpg'">
+        <div class="proto-title-wrap">
+          <div class="proto-title">
+            <a href="https://store.steampowered.com/app/3070070/TCG_Card_Shop_Simulator/" target="_blank">TCG Card Shop Simulator</a>
+          </div>
+          <div class="proto-subtitle">卡店模拟器 · 2024.09 EA · OPNeon Games（马来西亚独立）</div>
+          <div class="proto-scheme-tag">对应方向 E：拆包 + 卡店经营（与港口开箱同源爽点）</div>
+        </div>
+      </div>
+      <div class="proto-metrics">
+        <div class="metric"><span class="k">峰值在线</span><span class="v highlight">53,255</span></div>
+        <div class="metric"><span class="k">评论总数</span><span class="v">47,061</span></div>
+        <div class="metric"><span class="k">好评率</span><span class="v highlight">97%</span></div>
+        <div class="metric"><span class="k">移动端</span><span class="v">3.7★</span></div>
+      </div>
+      <div class="rating-bar"><div class="rating-fill" style="width:97%"></div></div>
+      <div class="rating-text">压倒性好评 · 东亚玩家浓度极高（中文 + 日韩合计 19%）</div>
+      <div class="chart-wrap"><canvas id="chart-tcgcard"></canvas></div>
+      <div class="proto-analysis">
+        <div class="analysis-title">核心洞察</div>
+        <ul>
+          <li class="positive">简中 3,178 + 繁中 680 + 日 385 + 韩 433 = 东亚强共鸣</li>
+          <li class="positive">"开包即爽"的多巴胺核心，与港口开箱 / 仓储拍卖完全同源</li>
+          <li class="warning">App Store 同名山寨版仅 600 下载、3.7 星，说明官方未上移动端 → 我们有空窗</li>
+          <li class="positive">结论：拆包爽点 + 经营闭环 = 最适合轻量化 SLG 前端钩子</li>
+        </ul>
+        <div class="cross-ref">
+          ↔ 交叉验证：<a href="https://steamcharts.com/app/3070070" target="_blank">Steam Charts</a> 53,255 峰值 · G2A 新闻确认 38,762 早期峰值
+        </div>
+      </div>
+    </div>
+
+    <!-- 3. DREDGE -->
+    <div class="proto-card tier-recommended">
+      <div class="tier-badge recommended">A 级推荐</div>
+      <div class="proto-header">
+        <img class="proto-icon" src="https://cdn.cloudflare.steamstatic.com/steam/apps/1562430/capsule_184x69.jpg" alt="DREDGE icon" onerror="this.src='https://cdn.cloudflare.steamstatic.com/steam/apps/1562430/header.jpg'">
+        <div class="proto-title-wrap">
+          <div class="proto-title">
+            <a href="https://store.steampowered.com/app/1562430/DREDGE/" target="_blank">DREDGE</a>
+          </div>
+          <div class="proto-subtitle">渔帆暗涌 · 2023.03 · Black Salt Games / Team17</div>
+          <div class="proto-scheme-tag">对应方向 H：深海守望者（克苏鲁渔夫 + 慢节奏 SLG）</div>
+        </div>
+      </div>
+      <div class="proto-metrics">
+        <div class="metric"><span class="k">销量</span><span class="v highlight">100万+</span></div>
+        <div class="metric"><span class="k">评论总数</span><span class="v">53,246</span></div>
+        <div class="metric"><span class="k">好评率</span><span class="v highlight">96%</span></div>
+        <div class="metric"><span class="k">iOS 已上</span><span class="v">2025.02</span></div>
+      </div>
+      <div class="rating-bar"><div class="rating-fill" style="width:96%"></div></div>
+      <div class="rating-text">压倒性好评 · PlayTracker 估算 290 万玩家触达</div>
+      <div class="chart-wrap"><canvas id="chart-dredge"></canvas></div>
+      <div class="proto-analysis">
+        <div class="analysis-title">核心洞察（修正之前日语 12% 的错误判断）</div>
+        <ul>
+          <li class="positive">英语 30,641 (57.5%) 主导，说明欧美是核心盘</li>
+          <li class="warning">日语真实只有 282 条（0.53%），之前我错写 12% 是幻觉，已更正</li>
+          <li class="positive">简中 2,970 + 繁中 374 = 中文玩家 6.3%，对克苏鲁渔夫有兴趣</li>
+          <li class="positive">iOS 已登陆（$24.99 一次性解锁），证明海外玩家愿为慢节奏海洋题材付费</li>
+        </ul>
+        <div class="cross-ref">
+          ↔ 交叉验证：<a href="https://www.gamedeveloper.com/business/dredge-smashes-internal-expectations-after-topping-1-million-sales" target="_blank">GameDeveloper</a> 确认 100 万销量 · <a href="https://playtracker.net/insight/game/83422" target="_blank">PlayTracker</a> 290 万触达
+        </div>
+      </div>
+    </div>
+
+    <!-- 4. Storage Hunter Simulator -->
+    <div class="proto-card tier-caution">
+      <div class="tier-badge caution">A- 级（慎用）</div>
+      <div class="proto-header">
+        <img class="proto-icon" src="https://cdn.cloudflare.steamstatic.com/steam/apps/1442430/capsule_184x69.jpg" alt="Storage Hunter icon" onerror="this.src='https://cdn.cloudflare.steamstatic.com/steam/apps/1442430/header.jpg'">
+        <div class="proto-title-wrap">
+          <div class="proto-title">
+            <a href="https://store.steampowered.com/app/1442430/Storage_Hunter_Simulator/" target="_blank">Storage Hunter Simulator</a>
+          </div>
+          <div class="proto-subtitle">仓储猎人 · 2025.11 正式版 · astragon 发行</div>
+          <div class="proto-scheme-tag">对应方向 A：港口开箱 SLG 的直接参考原型</div>
+        </div>
+      </div>
+      <div class="proto-metrics">
+        <div class="metric"><span class="k">峰值在线</span><span class="v">~3,500</span></div>
+        <div class="metric"><span class="k">评论总数</span><span class="v">3,829</span></div>
+        <div class="metric"><span class="k">好评率</span><span class="v" style="color:#eab308">79%</span></div>
+        <div class="metric"><span class="k">发售价</span><span class="v">$24.99</span></div>
+      </div>
+      <div class="rating-bar"><div class="rating-fill mixed" style="width:79%"></div></div>
+      <div class="rating-text">多半好评 · 题材验证成功但执行粗糙</div>
+      <div class="chart-wrap"><canvas id="chart-storage"></canvas></div>
+      <div class="proto-analysis">
+        <div class="analysis-title">核心洞察</div>
+        <ul>
+          <li class="positive">英语 1,684 (47%) + 德语 358 (10%) → 欧美文化直接资产（Storage Wars 电视剧 IP）</li>
+          <li class="warning">简中 358 条意外高（10%），说明华人玩家对拍卖淘宝也感兴趣</li>
+          <li class="negative">79% 好评说明执行层有问题：AI 生成内容、引导差</li>
+          <li class="positive">结论：题材方向验证成功，我们做港口开箱可吸收其用户但要做得更精</li>
+        </ul>
+        <div class="cross-ref">
+          ↔ 题材血缘：A&E 电视剧《Storage Wars》13 季 · MrBeast 开箱系列 YouTube 10 亿+ 播放
+        </div>
+      </div>
+    </div>
+
+    <!-- 5. Beholder -->
+    <div class="proto-card tier-caution">
+      <div class="tier-badge caution">B 级（区域性）</div>
+      <div class="proto-header">
+        <img class="proto-icon" src="https://cdn.cloudflare.steamstatic.com/steam/apps/475550/capsule_184x69.jpg" alt="Beholder icon" onerror="this.src='https://cdn.cloudflare.steamstatic.com/steam/apps/475550/header.jpg'">
+        <div class="proto-title-wrap">
+          <div class="proto-title">
+            <a href="https://store.steampowered.com/app/475550/Beholder/" target="_blank">Beholder</a>
+          </div>
+          <div class="proto-subtitle">旁观者 · 2016.11 · Warm Lamp Games / Alawar（俄罗斯）</div>
+          <div class="proto-scheme-tag">对应方向 B：极权公寓管理员（叙事向 SLG）</div>
+        </div>
+      </div>
+      <div class="proto-metrics">
+        <div class="metric"><span class="k">评论总数</span><span class="v">30,255</span></div>
+        <div class="metric"><span class="k">好评率</span><span class="v highlight">92%</span></div>
+        <div class="metric"><span class="k">俄语占比</span><span class="v" style="color:#fde047">38.8%</span></div>
+        <div class="metric"><span class="k">移动端</span><span class="v">已上</span></div>
+      </div>
+      <div class="rating-bar"><div class="rating-fill" style="width:92%"></div></div>
+      <div class="rating-text">特别好评 · 长尾 8 年仍有活跃</div>
+      <div class="chart-wrap"><canvas id="chart-beholder"></canvas></div>
+      <div class="proto-analysis">
+        <div class="analysis-title">核心洞察（关键反直觉发现）</div>
+        <ul>
+          <li class="warning">俄语 8,718 条（38.8%） &gt; 英语 3,021 条（13.4%） · 题材极度区域性</li>
+          <li class="warning">土耳其 1,337 + 波兰 646 → 东欧/中东强，欧美反而是补充盘</li>
+          <li class="negative">"极权公寓"对欧美玩家情感门槛高，对东欧/俄语区是共情</li>
+          <li class="warning">结论：不适合主打欧美，但如果做俄语区/东欧市场可强推</li>
+        </ul>
+        <div class="cross-ref">
+          ↔ 交叉验证：Alawar 是俄罗斯头部发行商 · Beholder 2 Google Play 俄语区 50K+ 下载
+        </div>
+      </div>
+    </div>
+
+    <!-- 6. Empire of Sin -->
+    <div class="proto-card tier-avoid">
+      <div class="tier-badge avoid">C 级（不推荐直接对标）</div>
+      <div class="proto-header">
+        <img class="proto-icon" src="https://cdn.cloudflare.steamstatic.com/steam/apps/604540/capsule_184x69.jpg" alt="Empire of Sin icon" onerror="this.src='https://cdn.cloudflare.steamstatic.com/steam/apps/604540/header.jpg'">
+        <div class="proto-title-wrap">
+          <div class="proto-title">
+            <a href="https://store.steampowered.com/app/604540/Empire_of_Sin/" target="_blank">Empire of Sin</a>
+          </div>
+          <div class="proto-subtitle">罪恶帝国 · 2020.12 · Romero Games / Paradox</div>
+          <div class="proto-scheme-tag">对应方向 G：禁酒令黑帮的失败参考案例</div>
+        </div>
+      </div>
+      <div class="proto-metrics">
+        <div class="metric"><span class="k">峰值在线</span><span class="v danger">7,728</span></div>
+        <div class="metric"><span class="k">评论总数</span><span class="v">6,218</span></div>
+        <div class="metric"><span class="k">好评率</span><span class="v" style="color:#eab308">48%</span></div>
+        <div class="metric"><span class="k">现在玩家</span><span class="v danger">~70</span></div>
+      </div>
+      <div class="rating-bar"><div class="rating-fill mixed" style="width:48%"></div></div>
+      <div class="rating-text">褒贬不一 · 知名 IP 题材失败案例</div>
+      <div class="chart-wrap"><canvas id="chart-empire"></canvas></div>
+      <div class="proto-analysis">
+        <div class="analysis-title">核心洞察（反面教材）</div>
+        <ul>
+          <li class="negative">禁酒令/黑帮题材本身没问题，但重度 TBS + bug 多 = 失败</li>
+          <li class="warning">证明：同题材做重度不行，但做轻量化 + 拆包拉人 = 还是蓝海</li>
+          <li class="positive">语言分布相对均衡（英/俄/欧均有）→ 题材本身有全球受众</li>
+          <li class="positive">结论：保留题材，彻底抛弃玩法形态，做 Schedule I 骨架 + 禁酒令皮</li>
+        </ul>
+        <div class="cross-ref">
+          ↔ 交叉验证：<a href="https://steamcharts.com/app/604540" target="_blank">Steam Charts</a> 从 7,728 跌至 70 · Paradox 论坛已停更
+        </div>
+      </div>
+    </div>
+
+    <!-- 7. Undisputed -->
+    <div class="proto-card tier-caution">
+      <div class="tier-badge caution">B+ 级（玩法参考）</div>
+      <div class="proto-header">
+        <img class="proto-icon" src="https://cdn.cloudflare.steamstatic.com/steam/apps/1451190/capsule_184x69.jpg" alt="Undisputed icon" onerror="this.src='https://cdn.cloudflare.steamstatic.com/steam/apps/1451190/header.jpg'">
+        <div class="proto-title-wrap">
+          <div class="proto-title">
+            <a href="https://store.steampowered.com/app/1451190/Undisputed/" target="_blank">Undisputed</a>
+          </div>
+          <div class="proto-subtitle">无可争议拳击 · 2024.10 正式版 · Steel City Interactive</div>
+          <div class="proto-scheme-tag">对应方向 C：地下拳击 / 格斗俱乐部的视觉参考</div>
+        </div>
+      </div>
+      <div class="proto-metrics">
+        <div class="metric"><span class="k">评论总数</span><span class="v">21,961</span></div>
+        <div class="metric"><span class="k">好评率</span><span class="v" style="color:#eab308">60%</span></div>
+        <div class="metric"><span class="k">英语占比</span><span class="v highlight">84.3%</span></div>
+        <div class="metric"><span class="k">拳击 IP</span><span class="v">40+ 真人</span></div>
+      </div>
+      <div class="rating-bar"><div class="rating-fill mixed" style="width:60%"></div></div>
+      <div class="rating-text">褒贬不一 · 英语区是绝对核心（13,528 条）</div>
+      <div class="chart-wrap"><canvas id="chart-undisputed"></canvas></div>
+      <div class="proto-analysis">
+        <div class="analysis-title">核心洞察</div>
+        <ul>
+          <li class="positive">拳击垂直品类英语区承载力足：单原型拿下 13,528 英语评论</li>
+          <li class="warning">60% 好评 = 硬核拳击玩家对细节要求极高，轻量化反而可能更稳</li>
+          <li class="warning">日/韩/中评论数过少，亚洲市场仍是空白</li>
+          <li class="positive">结论：地下拳击做轻度经营（拳馆老板视角），可避开硬核拳击的坑</li>
+        </ul>
+        <div class="cross-ref">
+          ↔ 交叉验证：UFC 5 / Fight Night Champion 均为英语区主力 · MMA 在亚洲仍是新兴市场
+        </div>
+      </div>
+    </div>
+
+    <!-- 8. To The Rescue -->
+    <div class="proto-card tier-avoid">
+      <div class="tier-badge avoid">C 级（情感题材不足）</div>
+      <div class="proto-header">
+        <img class="proto-icon" src="https://cdn.cloudflare.steamstatic.com/steam/apps/946720/capsule_184x69.jpg" alt="To The Rescue icon" onerror="this.src='https://cdn.cloudflare.steamstatic.com/steam/apps/946720/header.jpg'">
+        <div class="proto-title-wrap">
+          <div class="proto-title">
+            <a href="https://store.steampowered.com/app/946720/To_The_Rescue/" target="_blank">To The Rescue!</a>
+          </div>
+          <div class="proto-subtitle">动物收容所 · 2021.11 · Little Rock Games</div>
+          <div class="proto-scheme-tag">对应方向 I：动物庇护所（情感向慈善经营）</div>
+        </div>
+      </div>
+      <div class="proto-metrics">
+        <div class="metric"><span class="k">评论总数</span><span class="v">2,123</span></div>
+        <div class="metric"><span class="k">好评率</span><span class="v" style="color:#eab308">67%</span></div>
+        <div class="metric"><span class="k">发售价</span><span class="v">$9.99</span></div>
+        <div class="metric"><span class="k">20% 捐赠</span><span class="v">PetFinder</span></div>
+      </div>
+      <div class="rating-bar"><div class="rating-fill mixed" style="width:67%"></div></div>
+      <div class="rating-text">褒贬不一 · 安乐死机制引发争议</div>
+      <div class="chart-wrap"><canvas id="chart-rescue"></canvas></div>
+      <div class="proto-analysis">
+        <div class="analysis-title">核心洞察</div>
+        <ul>
+          <li class="warning">评论总数仅 2,123 → 纯善题材承载力有限</li>
+          <li class="negative">纯慈善缺乏"对抗感"，长线留存难</li>
+          <li class="positive">动物题材本身可用，但要加偷动物/打击黑市/对抗猎人等冲突层</li>
+          <li class="positive">结论：保留情感壳，内核改为"动物联盟 vs 黑市/猎人"</li>
+        </ul>
+        <div class="cross-ref">
+          ↔ 交叉验证：同期 Cat Cafe Manager 销量也仅中等 · 纯情感经营类需要冲突层补足
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- 地区汇总 -->
+  <div class="section-title">二、地区分布汇总（基于 8 款原型 44.5 万真实评论聚合）</div>
+
+  <div class="proto-card" style="max-width: 100%;">
+    <div class="proto-header" style="padding-right: 0;">
+      <div class="proto-title-wrap">
+        <div class="proto-title">全量原型聚合地区分布</div>
+        <div class="proto-subtitle">Steam 官方语言过滤器累加 · 总评论 446,103 条</div>
+      </div>
+    </div>
+    <div class="chart-wrap" style="height: 320px;"><canvas id="chart-overall"></canvas></div>
+    <div class="proto-analysis">
+      <div class="analysis-title">关键结论</div>
+      <ul>
+        <li class="positive"><strong>英语区是绝对主盘（约 55%）</strong>，美欧澳是任何海外项目的必选</li>
+        <li class="positive"><strong>德语/西语/法语合计 ~15%</strong>，欧洲非英语区是被低估的肥肉</li>
+        <li class="warning"><strong>俄语 5-10% 波动大</strong>，强依赖题材（Beholder 类高达 38.8%，拆包类仅 2%）</li>
+        <li class="warning"><strong>中文（简+繁）~4-8%</strong>，东亚市场需要针对性题材才能激活</li>
+        <li class="negative"><strong>日语通常仅 0.5-1%</strong>（DREDGE 真实 0.53%），日本 Steam 盘很小，要打日本必须上 App Store</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- 推荐方向 -->
+  <div class="section-title">三、最终推荐方向（按优先级完整排序）</div>
+
+  <!-- 总览表格 -->
+  <div style="margin-bottom: 28px; overflow-x: auto;">
+    <table style="width:100%; border-collapse: collapse; background: rgba(255,255,255,0.03); border-radius: 10px; overflow: hidden; font-size: 0.88em;">
+      <thead>
+        <tr style="background: rgba(255, 215, 0, 0.12); color: #ffd700;">
+          <th style="padding: 12px 10px; text-align: left; font-weight: 600; border-bottom: 1px solid rgba(255,215,0,0.3);">排序</th>
+          <th style="padding: 12px 10px; text-align: left; font-weight: 600; border-bottom: 1px solid rgba(255,215,0,0.3);">方向</th>
+          <th style="padding: 12px 10px; text-align: left; font-weight: 600; border-bottom: 1px solid rgba(255,215,0,0.3);">核心原型</th>
+          <th style="padding: 12px 10px; text-align: center; font-weight: 600; border-bottom: 1px solid rgba(255,215,0,0.3);">买量合规</th>
+          <th style="padding: 12px 10px; text-align: center; font-weight: 600; border-bottom: 1px solid rgba(255,215,0,0.3);">海外盘大小</th>
+          <th style="padding: 12px 10px; text-align: center; font-weight: 600; border-bottom: 1px solid rgba(255,215,0,0.3);">SLG 改造空间</th>
+          <th style="padding: 12px 10px; text-align: center; font-weight: 600; border-bottom: 1px solid rgba(255,215,0,0.3);">立项评审 <span style="color:#9ca3af; font-weight: 400; font-size: 0.78em;">(2026-04)</span></th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr style="background: rgba(34, 197, 94, 0.08);">
+          <td style="padding: 10px; border-bottom: 1px solid rgba(255,255,255,0.05); color: #86efac; font-weight: 700;">S+</td>
+          <td style="padding: 10px; border-bottom: 1px solid rgba(255,255,255,0.05);"><strong><a href="https://docs.google.com/presentation/d/1TAKXJiJcD-EuYpHrij9HnDZSRET3OxmS/edit?usp=sharing&amp;ouid=110387310515616113298&amp;rtpof=true&amp;sd=true" target="_blank" rel="noopener" class="proj-link">方向 A：港口开箱 SLG</a></strong></td>
+          <td style="padding: 10px; border-bottom: 1px solid rgba(255,255,255,0.05); color: #9ca3af;">Storage Hunter + TCG Card Shop + MrBeast</td>
+          <td style="padding: 10px; border-bottom: 1px solid rgba(255,255,255,0.05); text-align: center;">✅ 完美</td>
+          <td style="padding: 10px; border-bottom: 1px solid rgba(255,255,255,0.05); text-align: center;">★★★★★</td>
+          <td style="padding: 10px; border-bottom: 1px solid rgba(255,255,255,0.05); text-align: center;">★★★★★</td>
+          <td style="padding: 10px; border-bottom: 1px solid rgba(255,255,255,0.05); text-align: center;"><strong style="color:#ffd700;">4.26</strong> <span style="color:#86efac; font-size:0.75em;">→ 4.50 预期</span> · <span style="color:#fde047;">Conditional Pass</span><br><span style="color:#9ca3af; font-size:0.8em;">P0 × 4 (已 ▶ 3 条玩法修订) · 7 维均分</span></td>
+        </tr>
+        <tr style="background: rgba(34, 197, 94, 0.08);">
+          <td style="padding: 10px; border-bottom: 1px solid rgba(255,255,255,0.05); color: #86efac; font-weight: 700;">S</td>
+          <td style="padding: 10px; border-bottom: 1px solid rgba(255,255,255,0.05);"><strong><a href="https://docs.google.com/presentation/d/1yzqprKv5d_heJeEEVsix4qnOjpc6jWov/edit?usp=sharing&amp;ouid=110387310515616113298&amp;rtpof=true&amp;sd=true" target="_blank" rel="noopener" class="proj-link">方向 G：禁酒令私酒帝国</a></strong></td>
+          <td style="padding: 10px; border-bottom: 1px solid rgba(255,255,255,0.05); color: #9ca3af;">Schedule I（骨架）+ Peaky Blinders + HBO 大西洋帝国</td>
+          <td style="padding: 10px; border-bottom: 1px solid rgba(255,255,255,0.05); text-align: center;">✅ 完美</td>
+          <td style="padding: 10px; border-bottom: 1px solid rgba(255,255,255,0.05); text-align: center;">★★★★★</td>
+          <td style="padding: 10px; border-bottom: 1px solid rgba(255,255,255,0.05); text-align: center;">★★★★★</td>
+          <td style="padding: 10px; border-bottom: 1px solid rgba(255,255,255,0.05); text-align: center;"><strong style="color:#ffd700;">4.17</strong> <span style="color:#86efac; font-size:0.75em;">→ 4.35 预期</span> · <span style="color:#fde047;">Conditional Pass</span><br><span style="color:#9ca3af; font-size:0.8em;">P0 × 5 (主动优化 4 条) · 7 维均分</span></td>
+        </tr>
+        <tr style="background: rgba(34, 197, 94, 0.08);">
+          <td style="padding: 10px; border-bottom: 1px solid rgba(255,255,255,0.05); color: #86efac; font-weight: 700;">A+</td>
+          <td style="padding: 10px; border-bottom: 1px solid rgba(255,255,255,0.05);"><strong><a href="https://docs.google.com/presentation/d/1-zja9e5Ad8v6vztUYACPL-b0yFAgYa3v/edit?usp=sharing&amp;ouid=110387310515616113298&amp;rtpof=true&amp;sd=true" target="_blank" rel="noopener" class="proj-link">方向 E：TCG 卡店帝国</a></strong></td>
+          <td style="padding: 10px; border-bottom: 1px solid rgba(255,255,255,0.05); color: #9ca3af;">TCG Card Shop Simulator（97%）</td>
+          <td style="padding: 10px; border-bottom: 1px solid rgba(255,255,255,0.05); text-align: center;">✅ 完美</td>
+          <td style="padding: 10px; border-bottom: 1px solid rgba(255,255,255,0.05); text-align: center;">★★★★☆</td>
+          <td style="padding: 10px; border-bottom: 1px solid rgba(255,255,255,0.05); text-align: center;">★★★★☆</td>
+          <td style="padding: 10px; border-bottom: 1px solid rgba(255,255,255,0.05); text-align: center;"><strong style="color:#ffd700;">3.91</strong> <span style="color:#86efac; font-size:0.75em;">→ 4.45 预期</span> · <span style="color:#fde047;">Conditional Pass</span><br><span style="color:#9ca3af; font-size:0.8em;">P0 × 5 (已 ▶ 4 条玩法修订) · 7 维均分（从 4.05 ⬇）</span></td>
+        </tr>
+        <tr style="background: rgba(34, 197, 94, 0.08);">
+          <td style="padding: 10px; border-bottom: 1px solid rgba(255,255,255,0.05); color: #86efac; font-weight: 700;">A+</td>
+          <td style="padding: 10px; border-bottom: 1px solid rgba(255,255,255,0.05);"><strong><a href="https://docs.google.com/presentation/d/1wyVGT_4AHho2nLCSxKxdV1pX1w-gfes4/edit?usp=sharing&amp;ouid=110387310515616113298&amp;rtpof=true&amp;sd=true" target="_blank" rel="noopener" class="proj-link">方向 H：深海守望者</a></strong></td>
+          <td style="padding: 10px; border-bottom: 1px solid rgba(255,255,255,0.05); color: #9ca3af;">DREDGE（Apple 2025 年度游戏）</td>
+          <td style="padding: 10px; border-bottom: 1px solid rgba(255,255,255,0.05); text-align: center;">✅ 完美</td>
+          <td style="padding: 10px; border-bottom: 1px solid rgba(255,255,255,0.05); text-align: center;">★★★★☆</td>
+          <td style="padding: 10px; border-bottom: 1px solid rgba(255,255,255,0.05); text-align: center;">★★★★☆</td>
+          <td style="padding: 10px; border-bottom: 1px solid rgba(255,255,255,0.05); text-align: center;"><strong style="color:#ffd700;">3.46</strong> <span style="color:#86efac; font-size:0.75em;">→ 4.10 预期</span> · <span style="color:#fde047;">Conditional Pass</span><br><span style="color:#9ca3af; font-size:0.8em;">P0 × 6 (已 ▶ 4 条玩法修订) · 7 维均分（最多）</span></td>
+        </tr>
+        <tr style="background: rgba(34, 197, 94, 0.08);">
+          <td style="padding: 10px; border-bottom: 1px solid rgba(255,255,255,0.05); color: #86efac; font-weight: 700;">A</td>
+          <td style="padding: 10px; border-bottom: 1px solid rgba(255,255,255,0.05);"><strong><a href="https://docs.google.com/presentation/d/1NyFhmzUPGHLTeZWM3C_JsQiA8l7SqBEP/edit?usp=sharing&amp;ouid=110387310515616113298&amp;rtpof=true&amp;sd=true" target="_blank" rel="noopener" class="proj-link">方向 I：动物联盟</a></strong></td>
+          <td style="padding: 10px; border-bottom: 1px solid rgba(255,255,255,0.05); color: #9ca3af;">Animal Shelter + Zootopia 情感叙事 + MPH</td>
+          <td style="padding: 10px; border-bottom: 1px solid rgba(255,255,255,0.05); text-align: center;">✅ 完美</td>
+          <td style="padding: 10px; border-bottom: 1px solid rgba(255,255,255,0.05); text-align: center;">★★★★☆</td>
+          <td style="padding: 10px; border-bottom: 1px solid rgba(255,255,255,0.05); text-align: center;">★★★★☆</td>
+          <td style="padding: 10px; border-bottom: 1px solid rgba(255,255,255,0.05); text-align: center;"><strong style="color:#ffd700;">3.94</strong> <span style="color:#86efac; font-size:0.75em;">→ 4.35 预期</span> · <span style="color:#fde047;">Conditional Pass</span><br><span style="color:#9ca3af; font-size:0.8em;">P0 × 5 (已 ▶ 4 条玩法修订) · 7 维均分（从 3.89 ⬆）</span></td>
+        </tr>
+        <tr style="background: rgba(234, 179, 8, 0.08);">
+          <td style="padding: 10px; border-bottom: 1px solid rgba(255,255,255,0.05); color: #fde047; font-weight: 700;">B+</td>
+          <td style="padding: 10px; border-bottom: 1px solid rgba(255,255,255,0.05);"><strong>方向 C：地下拳馆经营</strong></td>
+          <td style="padding: 10px; border-bottom: 1px solid rgba(255,255,255,0.05); color: #9ca3af;">Undisputed + Rocky IP 情感</td>
+          <td style="padding: 10px; border-bottom: 1px solid rgba(255,255,255,0.05); text-align: center;">⚠️ 暴力</td>
+          <td style="padding: 10px; border-bottom: 1px solid rgba(255,255,255,0.05); text-align: center;">★★★☆☆</td>
+          <td style="padding: 10px; border-bottom: 1px solid rgba(255,255,255,0.05); text-align: center;">★★★★☆</td>
+          <td style="padding: 10px; border-bottom: 1px solid rgba(255,255,255,0.05); text-align: center; color: #9ca3af;">— 暂未立项</td>
+        </tr>
+        <tr style="background: rgba(234, 179, 8, 0.08);">
+          <td style="padding: 10px; border-bottom: 1px solid rgba(255,255,255,0.05); color: #fde047; font-weight: 700;">B</td>
+          <td style="padding: 10px; border-bottom: 1px solid rgba(255,255,255,0.05);"><strong>方向 B：极权公寓管理员</strong></td>
+          <td style="padding: 10px; border-bottom: 1px solid rgba(255,255,255,0.05); color: #9ca3af;">Beholder（俄语区强）</td>
+          <td style="padding: 10px; border-bottom: 1px solid rgba(255,255,255,0.05); text-align: center;">✅ 合规</td>
+          <td style="padding: 10px; border-bottom: 1px solid rgba(255,255,255,0.05); text-align: center;">★★☆☆☆</td>
+          <td style="padding: 10px; border-bottom: 1px solid rgba(255,255,255,0.05); text-align: center;">★★★☆☆</td>
+          <td style="padding: 10px; border-bottom: 1px solid rgba(255,255,255,0.05); text-align: center; color: #9ca3af;">— 暂未立项</td>
+        </tr>
+        <tr style="background: rgba(239, 68, 68, 0.06);">
+          <td style="padding: 10px; border-bottom: 1px solid rgba(255,255,255,0.05); color: #fca5a5; font-weight: 700;">D</td>
+          <td style="padding: 10px; border-bottom: 1px solid rgba(255,255,255,0.05);"><strong><a href="https://docs.google.com/presentation/d/1KzZhURtjFFSqMVJm5bS9W74G4z4TEV_M/edit?usp=sharing&amp;ouid=110387310515616113298&amp;rtpof=true&amp;sd=true" target="_blank" rel="noopener" class="proj-link muted">方向 D：毒枭扮演（Nightking Chronicles）</a></strong></td>
+          <td style="padding: 10px; border-bottom: 1px solid rgba(255,255,255,0.05); color: #9ca3af;">Schedule I 直接照搬</td>
+          <td style="padding: 10px; border-bottom: 1px solid rgba(255,255,255,0.05); text-align: center; color: #fca5a5;">❌ 致命</td>
+          <td style="padding: 10px; border-bottom: 1px solid rgba(255,255,255,0.05); text-align: center;">★★★★★</td>
+          <td style="padding: 10px; border-bottom: 1px solid rgba(255,255,255,0.05); text-align: center;">★★★★☆</td>
+          <td style="padding: 10px; border-bottom: 1px solid rgba(255,255,255,0.05); text-align: center;"><strong style="color:#fca5a5;">2.69</strong> · <span style="color:#fca5a5;">REJECT</span><br><span style="color:#9ca3af; font-size:0.8em;">P0 × 8（结构性）· 7 维均分</span></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- S+ 方向 A：港口开箱 -->
+  <div class="direction-block recommended">
+    <div class="direction-title">🏆 方向 A：港口开箱 SLG（S+ 级最推）</div>
+    <div class="direction-subtitle">参考原型：Storage Hunter Simulator（A&E 电视剧《Storage Wars》）+ TCG Card Shop Simulator（拆包爽感）+ MrBeast 港口开箱综艺</div>
+    <div class="direction-body">
+      <p><strong>数据支撑：</strong>拆包爽点跨题材全部 79%+ 好评（TCG Card Shop 97% / Schedule I 97% / Storage Hunter 79%）。MrBeast 港口开箱系列 YouTube 单集 1-3 亿播放。</p>
+      <p><strong>为什么选它：</strong>拆包多巴胺是人类通用爽点（无文化壁垒），两个原型都没做深度经营/SLG，正好留下空窗。</p>
+      <p><strong>三层结构：</strong>港口拆箱（前端爽点）→ 码头防御 + 海关博弈（中层 Thronefall-like）→ 港口势力争霸（后端 SLG）</p>
+      <p><strong>目标市场：</strong>英语区主攻（55%+ 基本盘）+ 西班牙语/德语拓展盘，中文区用"华商港口"题材激活</p>
+    </div>
+    <div class="review-ribbon pass">
+      <span class="rr-label">PPT 工程</span>
+      <span class="rr-value"><a href="https://docs.google.com/presentation/d/1TAKXJiJcD-EuYpHrij9HnDZSRET3OxmS/edit?usp=sharing&amp;ouid=110387310515616113298&amp;rtpof=true&amp;sd=true" target="_blank" rel="noopener" class="proj-link">A_港口开箱_v4_含评审优化</a> · 集装箱沉没成本 + Storage Auctions × MyPerfectHotel</span>
+      <span class="rr-label">立项评审</span>
+      <span class="rr-value"><span class="rr-score">4.26 / 5</span> <span style="color:#86efac; font-size:0.7em; margin-left:6px;">→ 4.50 预期 · 修订闭环中</span> · <span class="rr-verdict pass">⚠️ Conditional Pass</span> · 7 维均分最高（玩法循环 4.6 / 付费留存 4.6 / 时间节点 4.6 / 美术 4.6 四项 ⭐）</span>
+      <span class="rr-label">4 项 P0</span>
+      <span class="rr-value">
+        <ul class="rr-p0-list">
+          <li>合规：欧盟 lootbox 审核备用包体（$X 抵扣券 + 保底物） — Slide 17 / 19a</li>
+          <li>区服：JP/KR 深度本地化验收人 + 中东去劫匪事件替代 — Slide 19a</li>
+          <li>团队预算：M1 配置卡 15 人 × 9 月 = $2.0M（Day 90 demo / Day 180 灰度 / Day 270 上线） — Slide 20 脚注</li>
+          <li>产能：50 封 M1 储备 + 20 封/月 × 6 月 + AI 辅助 = 120 封 M3 目标 — Slide 14e</li>
+        </ul>
+      </span>
+    </div>
+  </div>
+
+  <!-- S 方向 G：禁酒令私酒帝国 -->
+  <div class="direction-block recommended">
+    <div class="direction-title">🥈 方向 G：禁酒令私酒帝国（S 级推荐）</div>
+    <div class="direction-subtitle">参考原型：Schedule I（骨架蒸馏）+ Empire of Sin（题材参考但玩法抛弃）+《大西洋帝国》HBO 剧 + Peaky Blinders</div>
+    <div class="direction-body">
+      <p><strong>数据支撑：</strong>Schedule I 45.9 万峰值（Steam 史上独立前 10）+ 97% 好评证骨架爆火。但原题材毒枭 100% 无法过 iOS/Google Play 审核。</p>
+      <p><strong>为什么选它：</strong>蒸馏成 1920s 美国禁酒令 = 保留"违禁品生意"的禁忌快感，但完全合规。</p>
+      <p><strong>买量合规：</strong>威士忌/朗姆酒是高净值消费品，广告素材可以拍得非常精致（不像毒品的 CPI 限制）</p>
+      <p><strong>目标市场：</strong>欧美禁酒令文化共鸣极强（美剧《大西洋帝国》+ 电影《了不起的盖茨比》），东亚也有"上海滩"共鸣可转换</p>
+    </div>
+    <div class="review-ribbon pass">
+      <span class="rr-label">PPT 工程</span>
+      <span class="rr-value"><a href="https://docs.google.com/presentation/d/1yzqprKv5d_heJeEEVsix4qnOjpc6jWov/edit?usp=sharing&amp;ouid=110387310515616113298&amp;rtpof=true&amp;sd=true" target="_blank" rel="noopener" class="proj-link">G_禁酒令私酒帝国_Schedule-I+Peaky-Blinders+My-Perfect-Hotel</a></span>
+      <span class="rr-label">立项评审</span>
+      <span class="rr-value"><span class="rr-score">4.17 / 5</span> <span style="color:#86efac; font-size:0.7em; margin-left:6px;">→ 4.35 预期 · 修订闭环中</span> · <span class="rr-verdict pass">⚠️ Conditional Pass</span> · 题材匹配 4.4 + 玩法循环 4.6 ⭐ + 时间节点 4.8 ⭐</span>
+      <span class="rr-label">5 项 P0</span>
+      <span class="rr-value">
+        <ul class="rr-p0-list">
+          <li>区域：Slide 20 补「T3 绝对不上架国家清单」+ 中东备选"无酒精薄荷饮/香料经营" SKU — 发行经理 + 法务签字</li>
+          <li>资产复用：Slide 25 写明"70% 复用 = 代码/经营系统"而非全部美术；加 Phase1/2 资产考据包人周表</li>
+          <li>变现口径：IAA 55% / IAP 45%（PPT）vs IAP 85% / IAA 15%（应答集）必须单一口径，其他版本只能是"备选 aggressive"</li>
+          <li>评级：火拼用剪影/侧写/非写实伤害，Slide 20 统一标 17+/M + PEGI 咨询预算</li>
+          <li>CPI：Slide 22 拆"精准 $2.0-2.8 / 泛投 $4.5-6.5"两行，US 回本 D60-D90 必须锚定其中一套</li>
+        </ul>
+      </span>
+    </div>
+  </div>
+
+  <!-- A+ 方向 E：TCG 卡店帝国 -->
+  <div class="direction-block recommended">
+    <div class="direction-title">🃏 方向 E：TCG 卡店帝国 SLG（A+ 级推荐）</div>
+    <div class="direction-subtitle">参考原型：TCG Card Shop Simulator（97% · 53K 峰值）+ 游戏王 / 宝可梦 / 万智牌周边文化</div>
+    <div class="direction-body">
+      <p><strong>数据支撑：</strong>Steam 真实数据极强——总评 47,061 · 好评 97% · 简中 3,178 (6.8%) + 繁中 680 (1.4%) + 日 385 (0.8%) + 韩 433 (0.9%) = 东亚玩家 ≈ 10%，是所有原型里东亚占比最高的之一。</p>
+      <p><strong>为什么选它：</strong>原作只做"开店-拆包-定价-顾客"单店闭环，完全没有做多店扩张、同行竞争、城市流通、版本更新期的策略博弈，SLG 改造空间极大。官方至今未上移动端（只有个别第三方山寨版 600 下载 3.7★），留下 1-2 年窗口期。</p>
+      <p><strong>SLG 改造方向：</strong>单店拆包（爽点钩）→ 多店连锁 + 稀有卡投资（Thronefall-like 决策层）→ 玩家工会 / 城市卡场竞争 / 版本轮换元游戏（SLG 层）。可复用 TCG 周边的"集换式"情感锚点（真实玩家对 Pokémon/YGO 有 20+ 年情感积累）。</p>
+      <p><strong>目标市场：</strong>英语区 + 东亚（日韩台）双核心，与其他方向互补。女性玩家 + 垂直 TCG 文化用户（全球估算 5000 万+）都能覆盖。</p>
+      <p><strong>风险点：</strong>需要自研虚构卡牌 IP（不能直接用 Pokémon/MTG），前期美术投入比港口开箱高。</p>
+    </div>
+    <div class="review-ribbon pass">
+      <span class="rr-label">PPT 工程</span>
+      <span class="rr-value"><a href="https://docs.google.com/presentation/d/1-zja9e5Ad8v6vztUYACPL-b0yFAgYa3v/edit?usp=sharing&amp;ouid=110387310515616113298&amp;rtpof=true&amp;sd=true" target="_blank" rel="noopener" class="proj-link">E_TCG卡店帝国_TCG-Card-Shop-Simulator+My-Perfect-Hotel</a></span>
+      <span class="rr-label">立项评审</span>
+      <span class="rr-value"><span class="rr-score">3.91 / 5</span> <span style="color:#86efac; font-size:0.7em; margin-left:6px;">→ 4.45 预期 · 修订闭环中</span> · <span class="rr-verdict pass">⚠️ Conditional Pass</span> · 时间节点 4.6 ⭐ + 风险合规 3.6（同组最高） · 7 维换算后从旧 4.05 ⬇ 到第 4</span>
+      <span class="rr-label">5 项 P0</span>
+      <span class="rr-value">
+        <ul class="rr-p0-list">
+          <li>团队缺口：L5 D60+ 自研 IP 需 18 人月，当前预算只够 12 人月，补 4 列"团队 / 排期 / 预算分布"卡 — Slide 28</li>
+          <li>版号预案：TCG"开包" ≠ G 类 lootbox（店主视角），备"卡牌兑换"机制作为 Plan B — Slide 26</li>
+          <li>UR 选手机制：7 天内免费召回 1 次 + 超期召回 30% 主场建设费，UR 档案永久保留 — Slide 21</li>
+          <li>情感钩时机：P2 父亲笔记仍保留 15-20min（被动收入拐点 +5min），不延后 — Slide 11</li>
+          <li>沙特合规：卡包改名"商品包" + 隐藏概率 + 斋月限投 + 预审 $8K → 法律预算 $25K → $33K — Slide 26</li>
+        </ul>
+      </span>
+    </div>
+  </div>
+
+  <!-- A+ 方向 H：深海守望者 -->
+  <div class="direction-block recommended">
+    <div class="direction-title">🎣 方向 H：深海守望者 SLG（A+ 级推荐）</div>
+    <div class="direction-subtitle">参考原型：DREDGE / 渔帆暗涌（Apple 2025 设计奖 + iPad 年度游戏）+《克苏鲁的呼唤》IP 情感</div>
+    <div class="direction-body">
+      <p><strong>数据支撑：</strong>DREDGE 销量 100 万+（上线 7 月达成）· PlayTracker 估算 290 万玩家触达 · 好评率 96% · 刚于 2026.04 上 Apple Arcade（DREDGE+）· 拿下 2025 Apple Design Award + App Store 2025 iPad 年度游戏。移动端付费模式验证成功（一次性 $24.99 解锁）。</p>
+      <p><strong>Steam 语言分布（真实）：</strong>英语 57.5% · 简中 5.6% · 西语 3.2% · 德语 2.9% · 俄语 2.3% · 法语 2.2% · 韩语 1.8% → 全球均匀渗透型，没有极端区域化。</p>
+      <p><strong>为什么选它：</strong>DREDGE 自己是单机叙事 RPG，没做多岛经营 / 海上势力 / 渔业联盟这些 SLG 层。轻克苏鲁（Lovecraftian）+ 海洋探索这两个标签在 Steam 极其强势，但在移动 SLG 赛道完全空白。</p>
+      <p><strong>SLG 改造方向：</strong>日常出海打捞怪物鱼（前端放置）→ 母船装备升级 / 船员雇佣 / 夜间恐怖事件防御（中层决策）→ 多港口收购 / 争夺深海遗迹 / 海底神庙联盟战（后端 SLG）。克苏鲁氛围天然适合"低头看手机"的移动端节奏（对比毒枭题材的高 CPI，深海题材广告素材非常优雅）。</p>
+      <p><strong>目标市场：</strong>英语区（欧美宅男 + 恐怖爱好者）+ 日本市场（克苏鲁文化日本接受度极高，DREDGE 在 iPad 上日本榜单强势，虽然 Steam 日语 0.53% 但这正说明日本要走 App Store）。这是本方案里唯一有把握打开日本市场的方向。</p>
+      <p><strong>风险点：</strong>恐怖氛围的美术难度高，不能做得太卡通化失去了克苏鲁的诡异感。</p>
+    </div>
+    <div class="review-ribbon pass">
+      <span class="rr-label">PPT 工程</span>
+      <span class="rr-value"><a href="https://docs.google.com/presentation/d/1wyVGT_4AHho2nLCSxKxdV1pX1w-gfes4/edit?usp=sharing&amp;ouid=110387310515616113298&amp;rtpof=true&amp;sd=true" target="_blank" rel="noopener" class="proj-link">H_深海守望者_DREDGE+克苏鲁+My-Perfect-Hotel+thronefall</a></span>
+      <span class="rr-label">立项评审</span>
+      <span class="rr-value"><span class="rr-score">3.46 / 5</span> <span style="color:#86efac; font-size:0.7em; margin-left:6px;">→ 4.10 预期 · 修订闭环中</span> · <span class="rr-verdict pass">⚠️ Conditional Pass（5 项 CP 中分数最低，P0 最多）</span> · 时间节点 4.6 ⭐，但付费/留存 3.0 ⚠️ + 题材合规 2.6 ⚠️ 双红灯</span>
+      <span class="rr-label">6 项 P0</span>
+      <span class="rr-value">
+        <ul class="rr-p0-list">
+          <li>团队预算：SLG 层 D14+ 需 4 程序 + 2 服务器 = 6 人月，拆 D0-D14 / D14-D60 / D60+ 三阶段 — Slide 28</li>
+          <li>国内版号：改「深海考古」叙事 — 古神→异常生物 / 理智值→航海经验值 — Slide 26 预留本地化方案</li>
+          <li>评级风险：文案统一改成「灯塔信号 / 探索请求」保 ESRB 13+ / PEGI 12 + 5K 评级预审预算 — Slide 14/17</li>
+          <li>15-30min 诡异感：保留「理智 80 + 触手剪影 + 警告 banner」设计（续命而非劝退，回港即理智回满） — Slide 14</li>
+          <li>D2 留存目标：拆「目标 70% / 红线 50% / 现实 55-60%」三档，别让团队押上所有资源做 D2 — Slide 18</li>
+          <li>CPI 三档：保守 $2.50 / 中性 $1.80 / 激进 $1.20 已有，但要明确主投欧美男性 + DREDGE 老粉 + Lovecraft 粉 — Slide 24/25/27</li>
+        </ul>
+      </span>
+    </div>
+  </div>
+
+  <!-- A 方向 I：动物联盟 -->
+  <div class="direction-block recommended">
+    <div class="direction-title">🐾 方向 I：动物联盟 · 偷动物叙事（A 级推荐）</div>
+    <div class="direction-subtitle">参考原型：To The Rescue!（67% 纯善案例）+ Stray（叙事情感）+ Zoo Tycoon 系列 + Zootopia 情感叙事</div>
+    <div class="direction-body">
+      <p><strong>数据支撑：</strong>To The Rescue 只有 2,123 评论 67% 好评说明"纯善救助"承载力有限。但 Stray（猫咪视角）Steam 超 25 万评论 96% 证明"以动物为主角"的情感叙事有爆款潜力。</p>
+      <p><strong>为什么选它：</strong>单纯救助缺冲突层。加入"从黑市/马戏团偷救动物"的盗贼爽感 + SLG 扩张 = 情感 + 策略 + 叛逆三重钩子。</p>
+      <p><strong>全球共鸣：</strong>动物保护是全球左翼/环保议题 · 欧美基础盘极大 · 东南亚 + 欧美 + 港澳台都能吃</p>
+      <p><strong>目标市场：</strong>女性玩家 + 情感驱动玩家（之前 Last Asylum 证明情感驱动可行）</p>
+    </div>
+    <div class="review-ribbon pass">
+      <span class="rr-label">PPT 工程</span>
+      <span class="rr-value"><a href="https://docs.google.com/presentation/d/1NyFhmzUPGHLTeZWM3C_JsQiA8l7SqBEP/edit?usp=sharing&amp;ouid=110387310515616113298&amp;rtpof=true&amp;sd=true" target="_blank" rel="noopener" class="proj-link">I_动物联盟_动物庇护所+Zootopia情感叙事+My-Perfect-Hotel</a></span>
+      <span class="rr-label">立项评审</span>
+      <span class="rr-value"><span class="rr-score">3.94 / 5</span> <span style="color:#86efac; font-size:0.7em; margin-left:6px;">→ 4.35 预期 · 修订闭环中</span> · <span class="rr-verdict pass">⚠️ Conditional Pass</span> · 时间节点 4.6 ⭐ + 风险合规 3.6（同组最高）· 7 维换算后从旧 3.89 ⬆ 到第 3</span>
+      <span class="rr-label">5 项 P0</span>
+      <span class="rr-value">
+        <ul class="rr-p0-list">
+          <li>美术成本：双 palette UI × 2 + 60 NPC 表情 + 100+ 动物图鉴 + 4 区域场景 + 5 反派立绘 ≈ $48K（普通 $20K 的 2.4×），周期 4-5 个月 2-3 主美 — Slide 28</li>
+          <li>反派内容产能：5 反派 × 14 周 = 70 周，需 5 内容策划 + 3 关卡策划并行，上线前完成 #1-#3 + LiveOps 推 #4-#5 — Slide 28</li>
+          <li>公益合规：WWF / Best Friends 框架协议 $100K/家 × 3-4 家 + 0.5% 流水入捐款 + 季度 KPMG 审计 $30K/年，Slide 26 增"公益合规"栏，避免 FTC 消费者欺诈</li>
+          <li>战斗密度：D1 末塔防 + D2 早潜入保留（失败损失 30% / 自动触发狐狸志愿者分散），延后到 D5 反而断崖 — Slide 16/17</li>
+          <li>道德→付费：Slide 23 新增「救助加速包 $4.99 + 额外捐 $1」+「年度公益 Pass $39.99 + 捐 $10 给当地动保」，把道德爽点转化为付费动力</li>
+        </ul>
+      </span>
+    </div>
+  </div>
+
+  <!-- B+ 方向 C：地下拳馆 -->
+  <div class="direction-block caution">
+    <div class="direction-title">🥊 方向 C：地下拳击 / 拳馆经营（B+ 级待定）</div>
+    <div class="direction-subtitle">参考原型：Undisputed（硬核拳击垂直）+ Fight Club 电影 + Rocky 系列</div>
+    <div class="direction-body">
+      <p><strong>数据支撑：</strong>Undisputed 英语区 13,528 条证明拳击品类英语区有承载力。但整体 60% 好评说明硬核路线风险高，亚洲市场评论数极少。</p>
+      <p><strong>为什么选它：</strong>做轻度拳馆经营（签约拳手 + 训练 + 出赛 + 场馆升级）可避开硬核拳击玩家的高要求</p>
+      <p><strong>注意点：</strong>要蹭"Rocky / Fight Club"的 IP 情感，不要做真实 UFC 授权（成本太高）。暴力 UGC 在 TikTok 买量需要软化处理（卡通血 / 第三视角）。</p>
+    </div>
+  </div>
+
+  <!-- B 方向 B：极权公寓 -->
+  <div class="direction-block caution">
+    <div class="direction-title">⚠️ 方向 B：极权公寓管理员（B 级 · 仅俄语/东欧区）</div>
+    <div class="direction-subtitle">参考原型：Beholder · 反直觉数据：俄语 38.8% &gt; 英语 13.4%</div>
+    <div class="direction-body">
+      <p><strong>数据支撑：</strong>Steam 真实数据：俄语 8,718 条（38.8%）· 英语仅 3,021 条（13.4%）· 土耳其 1,337 + 波兰 646。</p>
+      <p><strong>为什么降级：</strong>原以为 Beholder 是全球题材，Steam 真实数据证明它是俄语/东欧题材。欧美玩家情感门槛太高。</p>
+      <p><strong>结论：</strong>不纳入主推（因为你要打欧美/日韩/港澳台），但如果将来做俄罗斯/东欧市场可专门立项</p>
+    </div>
+  </div>
+
+  <!-- D 方向 D：毒枭扮演原味 -->
+  <div class="direction-block" style="border-left-color: #ef4444; background: rgba(239, 68, 68, 0.06);">
+    <div class="direction-title" style="color: #fca5a5;">❌ 方向 D：毒枭扮演（Schedule I 原味 · D 级不推荐）</div>
+    <div class="direction-subtitle">参考原型：Schedule I 直接照搬 + Breaking Bad / Narcos 美剧情感 · 对应 PPT：d_nightking_empire（夜王毒枭）</div>
+    <div class="direction-body">
+      <p><strong>数据支撑（诱惑很大）：</strong>Schedule I 单平台 Steam 45.9 万峰值 · 292,471 评论 · 97% 好评 · App Store 已有 3+ 款同名山寨品上架（4.4 星 37 评 / #24 Simulation 榜），证明玩家需求真实存在且旺盛。</p>
+      <p><strong>致命问题 · 买量合规彻底封锁：</strong></p>
+      <p style="padding-left: 20px; color: #fca5a5;">• <strong>Meta（Facebook / Instagram）</strong>：Audience Network Policy 明确禁止 "promotion of drugs and drug-related products"，任何毒品相关素材直接拒审。</p>
+      <p style="padding-left: 20px; color: #fca5a5;">• <strong>Google Ads</strong>：Recreational Drugs Policy 明确禁止可卡因、大麻等素材，仅 FDA 批准的 ≤0.3% THC 产品在 CA/CO/PR 地区有限例外。</p>
+      <p style="padding-left: 20px; color: #fca5a5;">• <strong>AppLovin / Unity Ads</strong>：illegal-illicit-products 政策全面禁止。</p>
+      <p style="padding-left: 20px; color: #fca5a5;">• <strong>iOS / Google Play 审核</strong>：毒品生产/分销模拟 100% 不给过，现有山寨品都用"Schedule I Project"软化命名 + 低调不买量的游击模式生存。</p>
+      <p><strong>SLG 模式致命伤：</strong>SLG 是重买量品类，没有 Meta/Google/AppLovin/TikTok 四大主要渠道，CPI 没法压，长线 LTV 再高也无法规模化。这是 Schedule I 爆红但没人敢做原味手游的根本原因。</p>
+      <p><strong>结论：</strong>坚决不碰原味题材。想要 Schedule I 的玩法红利就走<strong>方向 G（禁酒令）</strong>——把"毒品"换成"私酒/走私雪茄/茶叶 / 海关违禁品"，骨架完全可迁移，爽感几乎不打折，但买量完全合规。这是唯一的正确解。</p>
+    </div>
+    <div class="review-ribbon reject">
+      <span class="rr-label">PPT 工程</span>
+      <span class="rr-value"><a href="https://docs.google.com/presentation/d/1KzZhURtjFFSqMVJm5bS9W74G4z4TEV_M/edit?usp=sharing&amp;ouid=110387310515616113298&amp;rtpof=true&amp;sd=true" target="_blank" rel="noopener" class="proj-link muted">d_nightking_empire</a>（Nightking Chronicles · 这座城，该醒了）— 结构性否决</span>
+      <span class="rr-label">立项评审</span>
+      <span class="rr-value"><span class="rr-score" style="color:#fca5a5;">2.69 / 5</span> · <span class="rr-verdict reject">❌ REJECT</span> · 题材合规 1.6 ⚠️ + 付费留存 1.4 ⚠️ + 题材匹配 2.2 ⚠️（3 项结构性否决）· 不设固定复审日期</span>
+      <span class="rr-label">8 项 P0（结构性）</span>
+      <span class="rr-value">
+        <ul class="rr-p0-list">
+          <li>合规预算：常年外部 counsel + 区域政策 diff + 商店申诉 + 税务实体 + 与 G 分拆代码边界 — Slide 23 新开表</li>
+          <li>可买量假设：Slide 17 必须拆"可买量 / 不可买量"两套 ROI，自然量 + 社区 + 主播 + PR 上限不能套 UA 模型</li>
+          <li>国服结论：Slide 21 明写"不做国服"（集团已批准前提），否则题材替换为合法隐喻 Plan B</li>
+          <li>移动端假设：Steam 通过 ≠ iOS/Android 通过 — 只能 Plan B（去毒品化/仅 PC/接受部分区永久不上架）</li>
+          <li>合规版循环：Slide 12 如果剥离"毒品 + 卡特尔"叙事，四层循环与 SLG 终局是否还能成立？画不出就冻结开发</li>
+          <li>买量素材：Slide 07 删除"过审无障碍"表述，CPI 标 N/A 不可规模化 UA</li>
+          <li>禁播增长：Twitch/YouTube/B 站限流，新增「Reddit / PC 模组 / 线下影展」低成本通道，每条给量化上限</li>
+          <li>评级敏感度：Slide 21 家长锁 + 18+ 题材会挡 60%+ 用户，Slide 17 LTV 必须乘以"可安装人群缩减系数"</li>
+        </ul>
+      </span>
+    </div>
+  </div>
+
+  </section>
+
+  <section class="tab-panel" data-tab="loop" role="tabpanel">
+
+  <!-- 第四部分：立项评审进展 -->
+  <div class="section-title">四、立项评审进展（2026-04 首轮评委会结果）</div>
+
+  <div class="review-board-wrap">
+    <div class="review-board-intro">
+      <strong>评委会配置：</strong>资深制作人（15 年）· 战略专家·题材策略（18 年）· 战略专家·玩法系统（10 年）· 运营·用户运营/LTV（6 年）· 运营·投放/CPM（8 年），共 5 人。<br>
+      <strong>打分维度（v4.2 · 7 维核心）：</strong>战略-题材匹配度 / 玩法-核心循环 / 玩法-时间节点 / 玩法-阶段过渡 / 商业化-付费/留存 / 风险-题材/合规 / 美术/配色/素材 <span style="color:#9ca3af;">（v4.2 精简：移除「落地-团队/排期/预算」「演讲-PPT 表达力」两维——执行层 + 演示层不应决定立项 PASS/REJECT，相关问题降级到 P0 清单）</span>。<br>
+      <strong>统一复审节点：</strong>2026-05-04（D 方向除外，需题材与合规方案整体重构后再约）。<br>
+      <strong>评审原始材料：</strong><code>ppt-master/projects/review-summary.md</code>（各项目 P0 清单、共性问题、推进建议 · PPT 工程链接已挂到项目名上）
+    </div>
+
+    <!-- v4.2 新增：决策一览 Summary 表格（带 PPT 超链接） -->
+    <div class="summary-table-wrap">
+      <div class="st-title">决策一览 Summary · 6 项目 7 维均分总表（v4.2）</div>
+      <div class="st-subtitle">点击项目名跳转对应 Google Slides PPT（需企业账户权限 · 没权限时跳转被拒绝属正常，不影响本页阅读） · 加粗行为推进优先级顺序 · 源数据：<code>ppt-master/projects/review-summary.md</code> §I</div>
+      <table class="summary-table">
+        <thead>
+          <tr>
+            <th>排名</th>
+            <th style="text-align:left;">方向 · PPT 文档</th>
+            <th>7 维均分</th>
+            <th>旧 9 维</th>
+            <th>裁决</th>
+            <th style="text-align:left;">关键亮点</th>
+            <th style="text-align:left;">关键短板</th>
+            <th>P0</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="st-rank">1</td>
+            <td class="st-name"><a href="https://docs.google.com/presentation/d/1TAKXJiJcD-EuYpHrij9HnDZSRET3OxmS/edit?usp=sharing&amp;ouid=110387310515616113298&amp;rtpof=true&amp;sd=true" target="_blank" rel="noopener" class="proj-link">方向 A · 港口开箱</a><span class="st-name-sub">A_港口开箱_v4_含评审优化</span></td>
+            <td class="st-score">4.26</td>
+            <td class="st-oldscore">4.16</td>
+            <td class="st-verdict pass">⚠️ CP</td>
+            <td class="st-highlight">玩法循环 4.6 / 付费留存 4.6 / 时间节点 4.6 / 美术 4.6（四项 ⭐）</td>
+            <td class="st-weak">风险合规 2.8 ⚠️</td>
+            <td class="st-p0">4</td>
+          </tr>
+          <tr>
+            <td class="st-rank">2</td>
+            <td class="st-name"><a href="https://docs.google.com/presentation/d/1yzqprKv5d_heJeEEVsix4qnOjpc6jWov/edit?usp=sharing&amp;ouid=110387310515616113298&amp;rtpof=true&amp;sd=true" target="_blank" rel="noopener" class="proj-link">方向 G · 禁酒令私酒帝国</a><span class="st-name-sub">G_禁酒令私酒帝国_Schedule-I+Peaky-Blinders+My-Perfect-Hotel</span></td>
+            <td class="st-score">4.17</td>
+            <td class="st-oldscore">4.09</td>
+            <td class="st-verdict pass">⚠️ CP</td>
+            <td class="st-highlight">时间节点 4.8 ⭐ / 玩法循环 4.6 ⭐ / 题材匹配 4.4</td>
+            <td class="st-weak">风险合规 2.4 ⚠️</td>
+            <td class="st-p0">5</td>
+          </tr>
+          <tr>
+            <td class="st-rank">3<span class="st-delta">⬆ 从 #4</span></td>
+            <td class="st-name"><a href="https://docs.google.com/presentation/d/1NyFhmzUPGHLTeZWM3C_JsQiA8l7SqBEP/edit?usp=sharing&amp;ouid=110387310515616113298&amp;rtpof=true&amp;sd=true" target="_blank" rel="noopener" class="proj-link">方向 I · 动物联盟</a><span class="st-name-sub">I_动物联盟_动物庇护所+Zootopia情感叙事+My-Perfect-Hotel</span></td>
+            <td class="st-score">3.94</td>
+            <td class="st-oldscore">3.89</td>
+            <td class="st-verdict pass">⚠️ CP</td>
+            <td class="st-highlight">时间节点 4.6 ⭐ / 风险合规 3.6（同组最高）</td>
+            <td class="st-weak">所有 7 维在 3.6–4.6 区间，缺一骑绝尘的亮点</td>
+            <td class="st-p0">5</td>
+          </tr>
+          <tr>
+            <td class="st-rank">4<span class="st-delta down">⬇ 从 #3</span></td>
+            <td class="st-name"><a href="https://docs.google.com/presentation/d/1-zja9e5Ad8v6vztUYACPL-b0yFAgYa3v/edit?usp=sharing&amp;ouid=110387310515616113298&amp;rtpof=true&amp;sd=true" target="_blank" rel="noopener" class="proj-link">方向 E · TCG 卡店帝国</a><span class="st-name-sub">E_TCG卡店帝国_TCG-Card-Shop-Simulator+My-Perfect-Hotel</span></td>
+            <td class="st-score">3.91</td>
+            <td class="st-oldscore">4.05</td>
+            <td class="st-verdict pass">⚠️ CP</td>
+            <td class="st-highlight">时间节点 4.6 ⭐ / 风险合规 3.6（同组最高）</td>
+            <td class="st-weak">商业化-付费/留存 3.4</td>
+            <td class="st-p0">5</td>
+          </tr>
+          <tr>
+            <td class="st-rank">5</td>
+            <td class="st-name"><a href="https://docs.google.com/presentation/d/1wyVGT_4AHho2nLCSxKxdV1pX1w-gfes4/edit?usp=sharing&amp;ouid=110387310515616113298&amp;rtpof=true&amp;sd=true" target="_blank" rel="noopener" class="proj-link">方向 H · 深海守望者</a><span class="st-name-sub">H_深海守望者_DREDGE+克苏鲁+My-Perfect-Hotel+thronefall</span></td>
+            <td class="st-score">3.46</td>
+            <td class="st-oldscore">3.53</td>
+            <td class="st-verdict pass">⚠️ CP</td>
+            <td class="st-highlight">时间节点 4.6 ⭐</td>
+            <td class="st-weak">付费留存 3.0 ⚠️ + 风险合规 2.6 ⚠️ 双红灯</td>
+            <td class="st-p0">6</td>
+          </tr>
+          <tr class="reject-row">
+            <td class="st-rank">6</td>
+            <td class="st-name"><a href="https://docs.google.com/presentation/d/1KzZhURtjFFSqMVJm5bS9W74G4z4TEV_M/edit?usp=sharing&amp;ouid=110387310515616113298&amp;rtpof=true&amp;sd=true" target="_blank" rel="noopener" class="proj-link muted">方向 D · 毒枭原味</a><span class="st-name-sub">d_nightking_empire</span></td>
+            <td class="st-score" style="color:#fca5a5;">2.69</td>
+            <td class="st-oldscore">2.78</td>
+            <td class="st-verdict reject">❌ REJECT</td>
+            <td class="st-highlight">—</td>
+            <td class="st-weak">付费留存 1.4 ⚠️ + 合规 1.6 ⚠️ + 题材 2.2 ⚠️ 三项结构性否决</td>
+            <td class="st-p0">8</td>
+          </tr>
+        </tbody>
+      </table>
+      <div class="matrix-legend">
+        <div class="matrix-legend-item">⚠️ CP = Conditional Pass · 2 周内全部 P0 闭环后进入下一阶段</div>
+        <div class="matrix-legend-item">❌ REJECT = 不设固定复审日期，需先书面确认「题材/合规重构方案」</div>
+        <div class="matrix-legend-item">⬆/⬇ = 相对旧 9 维框架的排名升降（E/I 交换）</div>
+      </div>
+    </div>
+
+    <!-- 6 项目加权分横向对比（v4.2 · 按新排名 A>G>I>E>H>D 调整顺序）-->
+    <div class="verdict-grid">
+      <div class="verdict-card pass">
+        <div class="vc-head"><span class="vc-name"><a href="https://docs.google.com/presentation/d/1TAKXJiJcD-EuYpHrij9HnDZSRET3OxmS/edit?usp=sharing&amp;ouid=110387310515616113298&amp;rtpof=true&amp;sd=true" target="_blank" rel="noopener" class="proj-link">方向 A · 港口开箱</a></span><span class="vc-score">4.26 <span style="font-size:0.5em; color:#86efac;">→ 4.50</span></span></div>
+        <div class="vc-bar"><div class="vc-bar-fill" style="width: 85.2%;"></div></div>
+        <div class="vc-verdict"><strong>⚠️ Conditional Pass</strong> · 7 维均分最高，P0 仅 4 项</div>
+        <div class="vc-p0"><strong>亮点：</strong>玩法循环 4.6 / 付费留存 4.6 / 时间节点 4.6 / 美术 4.6（四项 ⭐）</div>
+      </div>
+      <div class="verdict-card pass">
+        <div class="vc-head"><span class="vc-name"><a href="https://docs.google.com/presentation/d/1yzqprKv5d_heJeEEVsix4qnOjpc6jWov/edit?usp=sharing&amp;ouid=110387310515616113298&amp;rtpof=true&amp;sd=true" target="_blank" rel="noopener" class="proj-link">方向 G · 禁酒令</a></span><span class="vc-score">4.17 <span style="font-size:0.5em; color:#86efac;">→ 4.35</span></span></div>
+        <div class="vc-bar"><div class="vc-bar-fill" style="width: 83.4%;"></div></div>
+        <div class="vc-verdict"><strong>⚠️ Conditional Pass</strong> · 题材匹配 4.4 + 玩法循环 4.6 + 时间节点 4.8 ⭐</div>
+        <div class="vc-p0"><strong>重点：</strong>变现口径统一 + T3 区域清单</div>
+      </div>
+      <div class="verdict-card pass">
+        <div class="vc-head"><span class="vc-name"><a href="https://docs.google.com/presentation/d/1NyFhmzUPGHLTeZWM3C_JsQiA8l7SqBEP/edit?usp=sharing&amp;ouid=110387310515616113298&amp;rtpof=true&amp;sd=true" target="_blank" rel="noopener" class="proj-link">方向 I · 动物联盟</a></span><span class="vc-score">3.94 <span style="font-size:0.5em; color:#86efac;">→ 4.35</span> <span style="font-size:0.5em; color:#86efac;">⬆ #3</span></span></div>
+        <div class="vc-bar"><div class="vc-bar-fill" style="width: 78.8%;"></div></div>
+        <div class="vc-verdict"><strong>⚠️ Conditional Pass</strong> · 时间节点 4.6 ⭐ + 风险合规 3.6（同组最高）</div>
+        <div class="vc-p0"><strong>重点：</strong>公益合规（WWF 框架协议）+ 美术成本控制</div>
+      </div>
+      <div class="verdict-card pass">
+        <div class="vc-head"><span class="vc-name"><a href="https://docs.google.com/presentation/d/1-zja9e5Ad8v6vztUYACPL-b0yFAgYa3v/edit?usp=sharing&amp;ouid=110387310515616113298&amp;rtpof=true&amp;sd=true" target="_blank" rel="noopener" class="proj-link">方向 E · TCG 卡店帝国</a></span><span class="vc-score">3.91 <span style="font-size:0.5em; color:#86efac;">→ 4.45</span> <span style="font-size:0.5em; color:#fca5a5;">⬇ #4</span></span></div>
+        <div class="vc-bar"><div class="vc-bar-fill" style="width: 78.2%;"></div></div>
+        <div class="vc-verdict"><strong>⚠️ Conditional Pass</strong> · 时间节点 4.6 + 风险合规 3.6（同组最高）</div>
+        <div class="vc-p0"><strong>重点：</strong>L5 自研 IP 6 人月缺口补齐</div>
+      </div>
+      <div class="verdict-card pass">
+        <div class="vc-head"><span class="vc-name"><a href="https://docs.google.com/presentation/d/1wyVGT_4AHho2nLCSxKxdV1pX1w-gfes4/edit?usp=sharing&amp;ouid=110387310515616113298&amp;rtpof=true&amp;sd=true" target="_blank" rel="noopener" class="proj-link">方向 H · 深海守望者</a></span><span class="vc-score">3.46 <span style="font-size:0.5em; color:#86efac;">→ 4.10</span></span></div>
+        <div class="vc-bar"><div class="vc-bar-fill" style="width: 69.2%;"></div></div>
+        <div class="vc-verdict"><strong>⚠️ Conditional Pass</strong> · 付费/留存 3.0 ⚠️ + 题材合规 2.6 ⚠️ 双红灯</div>
+        <div class="vc-p0"><strong>重点：</strong>国内叙事本地化 + D2 留存分档</div>
+      </div>
+      <div class="verdict-card reject">
+        <div class="vc-head"><span class="vc-name"><a href="https://docs.google.com/presentation/d/1KzZhURtjFFSqMVJm5bS9W74G4z4TEV_M/edit?usp=sharing&amp;ouid=110387310515616113298&amp;rtpof=true&amp;sd=true" target="_blank" rel="noopener" class="proj-link muted">方向 D · 毒枭原味</a></span><span class="vc-score">2.69</span></div>
+        <div class="vc-bar"><div class="vc-bar-fill" style="width: 53.8%;"></div></div>
+        <div class="vc-verdict"><strong>❌ REJECT</strong> · 3 项结构性否决（合规 1.6 + 付费 1.4 + 题材 2.2）</div>
+        <div class="vc-p0"><strong>结构性否决：</strong>题材与合规需整体重构</div>
+      </div>
+    </div>
+
+    <!-- 7 维度 × 6 项目 完整评分矩阵 (v4.2 · 移除「落地-团队/排期/预算」「演讲-PPT 表达力」两维) -->
+    <div class="dim-matrix-wrap">
+      <div class="matrix-title">7 维度 × 6 项目 完整评分矩阵（v4.2）</div>
+      <div class="matrix-subtitle">每格为 5 位评委打分的均值（1-5 分制）· 列顺序按 7 维均分排名 A &gt; G &gt; I &gt; E &gt; H &gt; D · 原始材料：<code>ppt-master/projects/review-summary.md</code> §II</div>
+      <table class="dim-matrix-table">
+        <thead>
+          <tr>
+            <th class="dim-col">维度</th>
+            <th><a href="https://docs.google.com/presentation/d/1TAKXJiJcD-EuYpHrij9HnDZSRET3OxmS/edit?usp=sharing&amp;ouid=110387310515616113298&amp;rtpof=true&amp;sd=true" target="_blank" rel="noopener" class="proj-link">A 港口开箱</a></th>
+            <th><a href="https://docs.google.com/presentation/d/1yzqprKv5d_heJeEEVsix4qnOjpc6jWov/edit?usp=sharing&amp;ouid=110387310515616113298&amp;rtpof=true&amp;sd=true" target="_blank" rel="noopener" class="proj-link">G 禁酒令</a></th>
+            <th><a href="https://docs.google.com/presentation/d/1NyFhmzUPGHLTeZWM3C_JsQiA8l7SqBEP/edit?usp=sharing&amp;ouid=110387310515616113298&amp;rtpof=true&amp;sd=true" target="_blank" rel="noopener" class="proj-link">I 动物联盟</a></th>
+            <th><a href="https://docs.google.com/presentation/d/1-zja9e5Ad8v6vztUYACPL-b0yFAgYa3v/edit?usp=sharing&amp;ouid=110387310515616113298&amp;rtpof=true&amp;sd=true" target="_blank" rel="noopener" class="proj-link">E TCG 卡店</a></th>
+            <th><a href="https://docs.google.com/presentation/d/1wyVGT_4AHho2nLCSxKxdV1pX1w-gfes4/edit?usp=sharing&amp;ouid=110387310515616113298&amp;rtpof=true&amp;sd=true" target="_blank" rel="noopener" class="proj-link">H 深海守望者</a></th>
+            <th><a href="https://docs.google.com/presentation/d/1KzZhURtjFFSqMVJm5bS9W74G4z4TEV_M/edit?usp=sharing&amp;ouid=110387310515616113298&amp;rtpof=true&amp;sd=true" target="_blank" rel="noopener" class="proj-link muted">D 毒枭原味</a></th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="dim-name">战略-题材匹配度</td>
+            <td class="dim-score mid">4.4</td>
+            <td class="dim-score mid">4.4</td>
+            <td class="dim-score mid">4.0</td>
+            <td class="dim-score mid">4.2</td>
+            <td class="dim-score mid">3.2</td>
+            <td class="dim-score lo dim-warn">2.2</td>
+          </tr>
+          <tr>
+            <td class="dim-name">玩法-核心循环</td>
+            <td class="dim-score hi dim-star">4.6</td>
+            <td class="dim-score hi dim-star">4.6</td>
+            <td class="dim-score mid">3.8</td>
+            <td class="dim-score mid">3.8</td>
+            <td class="dim-score mid">3.8</td>
+            <td class="dim-score mid">3.6</td>
+          </tr>
+          <tr>
+            <td class="dim-name">玩法-时间节点</td>
+            <td class="dim-score hi dim-star">4.6</td>
+            <td class="dim-score hi dim-star">4.8</td>
+            <td class="dim-score hi dim-star">4.6</td>
+            <td class="dim-score hi dim-star">4.6</td>
+            <td class="dim-score hi dim-star">4.6</td>
+            <td class="dim-score mid">3.2</td>
+          </tr>
+          <tr>
+            <td class="dim-name">玩法-阶段过渡</td>
+            <td class="dim-score mid">4.2</td>
+            <td class="dim-score mid">4.4</td>
+            <td class="dim-score mid">3.8</td>
+            <td class="dim-score mid">3.8</td>
+            <td class="dim-score mid">3.2</td>
+            <td class="dim-score mid">3.2</td>
+          </tr>
+          <tr>
+            <td class="dim-name">商业化-付费/留存</td>
+            <td class="dim-score hi dim-star">4.6</td>
+            <td class="dim-score mid">4.2</td>
+            <td class="dim-score mid">3.8</td>
+            <td class="dim-score mid">3.4</td>
+            <td class="dim-score lo dim-warn">3.0</td>
+            <td class="dim-score lo dim-warn">1.4</td>
+          </tr>
+          <tr>
+            <td class="dim-name">风险-题材/合规</td>
+            <td class="dim-score lo dim-warn">2.8</td>
+            <td class="dim-score lo dim-warn">2.4</td>
+            <td class="dim-score mid">3.6</td>
+            <td class="dim-score mid">3.6</td>
+            <td class="dim-score lo dim-warn">2.6</td>
+            <td class="dim-score lo dim-warn">1.6</td>
+          </tr>
+          <tr>
+            <td class="dim-name">美术/配色/素材</td>
+            <td class="dim-score hi dim-star">4.6</td>
+            <td class="dim-score mid">4.4</td>
+            <td class="dim-score mid">4.0</td>
+            <td class="dim-score mid">4.0</td>
+            <td class="dim-score mid">3.8</td>
+            <td class="dim-score mid">3.6</td>
+          </tr>
+        </tbody>
+        <tfoot>
+          <tr>
+            <td class="dim-name">加权总分（7 维均值）</td>
+            <td>4.26</td>
+            <td>4.17</td>
+            <td>3.94</td>
+            <td>3.91</td>
+            <td>3.46</td>
+            <td>2.69</td>
+          </tr>
+          <tr style="font-size:0.82em; color:#9ca3af;">
+            <td class="dim-name" style="font-weight: 400; color:#9ca3af;">旧 9 维加权</td>
+            <td>4.16</td>
+            <td>4.09</td>
+            <td>3.89</td>
+            <td>4.05</td>
+            <td>3.53</td>
+            <td>2.78</td>
+          </tr>
+        </tfoot>
+      </table>
+      <div class="matrix-legend">
+        <div class="matrix-legend-item"><span class="matrix-legend-sw" style="background: rgba(34, 197, 94, 0.25);"></span>≥ 4.5 项目亮点（⭐）</div>
+        <div class="matrix-legend-item"><span class="matrix-legend-sw" style="background: rgba(255, 215, 0, 0.15);"></span>3.1 – 4.4 合规区间</div>
+        <div class="matrix-legend-item"><span class="matrix-legend-sw" style="background: rgba(239, 68, 68, 0.25);"></span>≤ 3.0 需重点回应（⚠️）</div>
+        <div class="matrix-legend-item" style="color: #86efac;">读法：每列代表一个项目，每行代表一个维度，看颜色块分布即可定位每个项目的强弱与共性风险。</div>
+        <div class="matrix-legend-item" style="color: #fde047;">v4.2 变化：移除「落地-团队/排期/预算」「演讲-PPT 表达力」两维 → E/I 排名交换</div>
+      </div>
+    </div>
+
+    <!-- 共性问题表 -->
+    <div class="proto-analysis" style="margin-top: 0;">
+      <div class="analysis-title">跨项目共性问题（≥2 项目都中招 · 需要在 skill / 下一版 PPT 层面系统化 · v4.2 已移除「落地-团队/排期/预算」一栏，因为该维度已从立项评审框架中剥离，降级到 P0 清单）</div>
+      <table class="common-issues-table">
+        <thead>
+          <tr><th style="width: 22%;">维度</th><th style="width: 48%;">命中项目</th><th>为什么这么多项目都踩</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong style="color:#fde047;">风险-题材/合规</strong></td>
+            <td><code>A</code><code>D</code><code>G</code><code>H</code></td>
+            <td>欧盟 lootbox / 酒精区域 / 克苏鲁国内 / 毒品买量，每款都有一条独立合规线，且文化差异让单一方案覆盖不住。PPT 必带「T3 不上架清单 + 每区备选 SKU」。</td>
+          </tr>
+          <tr>
+            <td><strong style="color:#fde047;">商业化-付费/留存</strong></td>
+            <td><code>D</code><code>E</code><code>H</code></td>
+            <td>付费机制与题材的情感驱动没打通（如 I 方向道德 PR 没转化为付费；H 方向 D2 留存目标脱离现实；D 方向根本没法买量）。</td>
+          </tr>
+          <tr>
+            <td><strong style="color:#fde047;">战略-题材匹配度</strong></td>
+            <td><code>D</code><code>H</code></td>
+            <td>题材被国内版号否决时，要有"同机制 + 换皮"的本地化 Plan B（H 已给深海考古版；D 未给 = REJECT）。</td>
+          </tr>
+          <tr>
+            <td><strong style="color:#fde047;">玩法-阶段过渡</strong></td>
+            <td><code>D</code><code>H</code></td>
+            <td>SLG 层触发时间若放在 D14+，需要补「如延后到 D30 触发」的团队压力回退方案。</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- 推进顺序 (v4.2 · 按 7 维均分重排，I/E 交换) -->
+    <div class="priority-list">
+      <strong>推荐推进顺序</strong>（从 PPT 最成熟 → 最需返工 · v4.2 按 7 维均分重排）：
+      <ol>
+        <li><strong><a href="https://docs.google.com/presentation/d/1TAKXJiJcD-EuYpHrij9HnDZSRET3OxmS/edit?usp=sharing&amp;ouid=110387310515616113298&amp;rtpof=true&amp;sd=true" target="_blank" rel="noopener" class="proj-link">方向 A 港口开箱</a></strong>（4.26 · P0 × 4） — 2 周内闭环合规 SKU + 团队预算卡即可进下一阶段</li>
+        <li><strong><a href="https://docs.google.com/presentation/d/1yzqprKv5d_heJeEEVsix4qnOjpc6jWov/edit?usp=sharing&amp;ouid=110387310515616113298&amp;rtpof=true&amp;sd=true" target="_blank" rel="noopener" class="proj-link">方向 G 禁酒令私酒帝国</a></strong>（4.17 · P0 × 5） — 统一 IAA/IAP 口径 + 补 T3 区域清单</li>
+        <li><strong><a href="https://docs.google.com/presentation/d/1NyFhmzUPGHLTeZWM3C_JsQiA8l7SqBEP/edit?usp=sharing&amp;ouid=110387310515616113298&amp;rtpof=true&amp;sd=true" target="_blank" rel="noopener" class="proj-link">方向 I 动物联盟</a></strong>（3.94 · P0 × 5 · <span style="color:#86efac;">⬆ 从旧 #4</span>） — 重核美术成本 + 建立公益合规框架</li>
+        <li><strong><a href="https://docs.google.com/presentation/d/1-zja9e5Ad8v6vztUYACPL-b0yFAgYa3v/edit?usp=sharing&amp;ouid=110387310515616113298&amp;rtpof=true&amp;sd=true" target="_blank" rel="noopener" class="proj-link">方向 E TCG 卡店帝国</a></strong>（3.91 · P0 × 5 · <span style="color:#fca5a5;">⬇ 从旧 #3</span>） — 补 L5 自研 IP 团队 4 人月缺口</li>
+        <li><strong><a href="https://docs.google.com/presentation/d/1wyVGT_4AHho2nLCSxKxdV1pX1w-gfes4/edit?usp=sharing&amp;ouid=110387310515616113298&amp;rtpof=true&amp;sd=true" target="_blank" rel="noopener" class="proj-link">方向 H 深海守望者</a></strong>（3.46 · P0 × 6） — 国内叙事本地化 + CPI/D2 分档建模</li>
+        <li><strong><a href="https://docs.google.com/presentation/d/1KzZhURtjFFSqMVJm5bS9W74G4z4TEV_M/edit?usp=sharing&amp;ouid=110387310515616113298&amp;rtpof=true&amp;sd=true" target="_blank" rel="noopener" class="proj-link muted">方向 D 毒枭原味</a></strong>（2.69 · REJECT） — 不复审，若要继续先书面确认「题材重构方案」，否则永久搁置</li>
+      </ol>
+    </div>
+
+    <!-- 2026-04-20 玩法深度修订进展（v4.3 新增 · v4.4 落地闭环）-->
+    <div class="gameplay-fix-wrap" style="margin-top: 28px; padding: 18px 18px 14px; background: rgba(34, 197, 94, 0.06); border: 1px solid rgba(34, 197, 94, 0.25); border-radius: 12px;">
+      <div style="color: #86efac; font-size: 1.05em; font-weight: 600; margin-bottom: 6px;">🚀 玩法深度修订进展 · 2026-04-20（v4.4 · 评审 → 修订 → 文档/PPT 闭环）</div>
+      <div style="color: #d1d5db; font-size: 0.88em; line-height: 1.65; margin-bottom: 14px;">
+        <strong style="color:#fde047;">边界声明：</strong>本次修订<strong>仅针对核心玩法维度</strong>（循环 / 节点 / 过渡 / 钩子 / 定位），付费 / 买量 / 合规 / 法律风险四条线<strong>不在本轮范围</strong>（按业主要求另行处理）。<br>
+        <strong style="color:#fde047;">修订规模：</strong>5 个 CONDITIONAL PASS 项目（A / E / G / H / I） · 15 个 P0 + 4 个主动优化 = 19 条深度修订 · 合计 107,519 字节。<br>
+        <strong style="color:#fde047;">预期效果：</strong>5 项目均分 4.13 → 4.35（+0.22），达到 CLEAR PASS 门槛（≥ 4.30）。<br>
+        <strong style="color:#fde047;">原始材料：</strong><code>ppt-master/projects/[项目名]/核心玩法修订_CORE_GAMEPLAY_FIX.md</code> · 横向教训见 <code>ppt-master/projects/核心玩法共性教训_CROSS_PROJECT_GAMEPLAY_INSIGHTS.md</code>
+      </div>
+
+      <table class="common-issues-table" style="margin-bottom: 14px;">
+        <thead>
+          <tr>
+            <th style="width: 12%;">项目</th>
+            <th style="width: 10%;">修订数</th>
+            <th style="width: 40%;">核心玩法修订摘要</th>
+            <th style="width: 20%;">关键设计产出</th>
+            <th style="width: 18%;">目标均分</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong style="color:#86efac;">A 港口开箱</strong></td>
+            <td>3 P0</td>
+            <td>三层解耦定位模型（L-Core / L-Mid / L-Skin）· 分钟级解锁铁律表（前 60 分钟）· 4 阶段 SLG 逐步投放（PvE 优先）</td>
+            <td>L1-L3 定位模型 + 60 分钟网格 + 4 阶段 SLG</td>
+            <td>4.26 → <strong style="color:#fde047;">4.50</strong></td>
+          </tr>
+          <tr>
+            <td><strong style="color:#86efac;">E TCG 卡店</strong></td>
+            <td>4 P0</td>
+            <td>情绪节拍架构（父亲笔记 P2 时机）· UR 所有权保险 · 身份连续性模型（店主 → 经理 → IP 颠覆者）· L5 自研 IP 改为可选</td>
+            <td>情绪节拍 + UR 保险 + 身份连续 + 可选 L5</td>
+            <td>3.91 → <strong style="color:#fde047;">4.45</strong></td>
+          </tr>
+          <tr>
+            <td><strong style="color:#86efac;">G 禁酒令</strong></td>
+            <td>4 主动</td>
+            <td>21 天天级爽点铁律（分钟级）· 五钩子共振模型（D7/D14/D21 三次共振）· Peaky 情感内核转译（家族羁绊 + 女性力量 + 智谋 &gt; 暴力）· D21+ 单机派/社交派双轨</td>
+            <td>21 天网格 + 5 钩子共振 + Peaky 转译 + 双轨</td>
+            <td>4.17 → <strong style="color:#fde047;">4.35</strong></td>
+          </tr>
+          <tr>
+            <td><strong style="color:#86efac;">H 深海守望者</strong></td>
+            <td>4 P0</td>
+            <td>三环定位（克苏鲁入口过滤 → 深度钩）· 理智值→深潜值（正向资源）· 单一主导 + 辅助点缀借鉴（MPH 70% / DREDGE / 克苏鲁 / Frostpunk 灯油计）· 三层剥离 Frostpunk（保留灯油去除道德）</td>
+            <td>三环定位 + 深潜值 + 主导借鉴 + 三层剥离</td>
+            <td>3.46 → <strong style="color:#fde047;">4.10</strong></td>
+          </tr>
+          <tr>
+            <td><strong style="color:#86efac;">I 动物联盟</strong></td>
+            <td>4 P0</td>
+            <td>情感锚主导模型（治愈 + 战斗 = 守护动物）· 路径适配节奏（D1 塔防 + D2 潜行 + 三层退出口）· 责任扩张叙事（庇护所 → 教育中心 → 联盟总部）· 三条并行内容线（共享资产）</td>
+            <td>情感锚 + 三路径 + 责任扩张 + 三线并行</td>
+            <td>3.94 → <strong style="color:#fde047;">4.35</strong></td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div style="color: #d1d5db; font-size: 0.88em; line-height: 1.65; background: rgba(0,0,0,0.22); border: 1px solid rgba(255,215,0,0.15); border-radius: 8px; padding: 12px 14px;">
+        <div style="color: #fde047; font-weight: 600; margin-bottom: 8px;">10 条可复用设计原则（5 项目横向教训沉淀）</div>
+        <ol style="padding-left: 22px; margin: 0;">
+          <li><strong style="color:#e8e8e8;">三层解耦定位模型</strong> — L-Core（玩法） / L-Mid（叙事） / L-Skin（美术文化），任一层替换不影响其他层</li>
+          <li><strong style="color:#e8e8e8;">分钟级解锁铁律</strong> — 前 60 分钟 / 前 21 天每一分钟都写明核心爽点 + 新概念 + 情感钩子</li>
+          <li><strong style="color:#e8e8e8;">概念转移 + 新手保护</strong> — 新概念解锁时旧概念自动化 ≥ 70%，关键升级给 10 分钟纯体验期</li>
+          <li><strong style="color:#e8e8e8;">情绪节拍架构</strong> — 情感钩子在玩家情绪曲线的正确位置触发（不是等级触发）</li>
+          <li><strong style="color:#e8e8e8;">身份连续性模型</strong> — 身份升级是"累积"不是"切换"，核心资产跨身份永久有效</li>
+          <li><strong style="color:#e8e8e8;">核心资产保险</strong> — 稀有卡 / 动物 / 家族 NPC 等关键资产永久不被剥夺</li>
+          <li><strong style="color:#e8e8e8;">多轨路径 + 退出口</strong> — 重度内容至少 2 条路径（轻度 + 中度），一条单机党可走</li>
+          <li><strong style="color:#e8e8e8;">渐进式投放</strong> — SLG / PvP 分 4 阶段（PvE → 轻 PvP → 中 PvP → 重 PvP），每阶段 3 天稳定期</li>
+          <li><strong style="color:#e8e8e8;">借鉴多源的单一主导</strong> — 1 个主导借鉴（70%+） + 2-3 个辅助点缀（单一机制片段）</li>
+          <li><strong style="color:#e8e8e8;">内容生产并行化</strong> — 60+ 天留存需多条并行内容线（主线 / 支线 / LiveOps），共享资产</li>
+        </ol>
+        <div style="margin-top: 10px; color: #9ca3af; font-size: 0.92em;">
+          ※ 10 条原则对应 23 项 P0 自检表（立项前套用） · 详见 <code>ppt-master/projects/核心玩法共性教训_CROSS_PROJECT_GAMEPLAY_INSIGHTS.md</code> §3
+        </div>
+      </div>
+
+      <div style="margin-top: 12px; padding: 10px 12px; background: rgba(34,197,94,0.08); border: 1px solid rgba(34,197,94,0.30); border-radius: 8px; color: #d1d5db; font-size: 0.86em; line-height: 1.7;">
+        <strong style="color:#86efac;">✓ 2026-04-20 落地闭环状态（v4.4 新增）</strong><br>
+        <strong style="color:#fde047;">① design_spec.md 同步：</strong>5 个项目（A/E/G/H/I）的 <code>design_spec.md</code> 末尾已追加 <strong>§ XII 2026-04-20 核心玩法深度修订（v4 评审闭环）</strong> ribbon 章节（含 4 个要点摘要 + 与原 Slide 05/11/14/16/20/22 的对应关系 + 与其他评审文档的引用关系 + 下一步动作）<br>
+        <strong style="color:#fde047;">② 新增修订摘要 Slide：</strong>A / E / H / I 第 29 页、G 第 27 页各新增一张"核心玩法修订摘要（v4 评审闭环）"SVG / PPT 页，按项目配色（绿/橙/红/蓝/紫）生成<br>
+        <strong style="color:#fde047;">③ PPT 重生成：</strong>5 个项目的 <code>exports/*.pptx</code> 已本地重生成（含 native 可编辑版 + _svg 栅格版），附同源 SVG 与历史页<br>
+        <strong style="color:#fde047;">④ 立项模板：</strong>23 项立项 P0 自检表模板已写入 <code>ppt-master/projects/立项P0自检表模板_PROJECT_PRE_LAUNCH_CHECKLIST.md</code>，含 7 大维度评分卡 + 常见陷阱 + 评审流程<br>
+        <strong style="color:#fde047;">⑤ Google Slides 上传工具链：</strong><code>ppt-master/projects/_gdrive_upload/</code> 目录已就位（<code>OAUTH_SETUP_指南.md</code> + <code>gdrive_upload.py</code> + <code>.gitignore</code>），首次执行需本地授权 OAuth 凭据，之后 <code>python gdrive_upload.py</code> 可批量覆盖 5 个 Google Slides 文件
+      </div>
+
+      <div style="margin-top: 10px; color: #9ca3af; font-size: 0.82em;">
+        <strong style="color:#fde047;">复审节点：</strong>2026-05-04（D 方向除外） · <strong style="color:#fde047;">下一步：</strong>业主本地执行 <code>gdrive_upload.py</code> 推送 5 份 .pptx 到 Google Slides（同 file_id 覆盖），之后再跑一轮桌面评审 → 确认目标均分落地 · <strong style="color:#fde047;">范围说明：</strong>付费 / 买量 / 合规 / 法律风险的 P0 暂未处理，会在玩法维度稳定后另行组织修订
+      </div>
+    </div>
+  </div>
+
+  </section>
+
+  <section class="tab-panel" data-tab="principles" role="tabpanel">
+
+    <div class="section-title">10 条可复用设计原则（5 项目横向教训沉淀）</div>
+
+    <div class="principles-intro">
+      <div class="principles-intro-title">📐 从 19 条修订中抽象出的设计原则</div>
+      <p>2026-04-20 完成 5 个 CONDITIONAL PASS 项目（A / E / G / H / I）的核心玩法深度修订，合计 <strong style="color:var(--accent-amber);">15 P0 + 4 主动 = 19 条</strong> 深度修订。本页是对这 19 条修订的 <strong>横向抽象</strong>——哪些问题反复出现？哪些设计手法可以沉淀为可复用原则？</p>
+      <p><strong style="color:var(--accent-rose);">最高频共性问题</strong>：阶段过渡断裂 5/5 全员中招。这不是某个项目的特殊问题，是 <strong>"MPH 骨架 + 深度扩展"品类的结构性陷阱</strong>——前 21-30 天玩家期待"简单放置经营"（5 分钟一轮爽点密集），之后产品期待玩家进入"SLG 深度体验"（15-30 分钟一轮思考密集）。体验频率从"快速爽点"切到"深度思考"是一次痛苦的认知切换。</p>
+
+      <div class="common-problems-mini">
+        <div class="cp-card">
+          <div class="cp-name">阶段过渡断裂</div>
+          <div class="cp-freq">命中 A·E·G·H·I · <span class="hot">5/5</span></div>
+        </div>
+        <div class="cp-card">
+          <div class="cp-name">定位冲突</div>
+          <div class="cp-freq">命中 A·H·I · <span class="">3/5</span></div>
+        </div>
+        <div class="cp-card">
+          <div class="cp-name">概念密度过载</div>
+          <div class="cp-freq">命中 A·H·I · <span class="">3/5</span></div>
+        </div>
+        <div class="cp-card">
+          <div class="cp-name">身份撕裂</div>
+          <div class="cp-freq">命中 E·G·I · <span class="">3/5</span></div>
+        </div>
+        <div class="cp-card">
+          <div class="cp-name">核心资产威胁</div>
+          <div class="cp-freq">命中 E·I · <span class="">2/5</span></div>
+        </div>
+        <div class="cp-card">
+          <div class="cp-name">钩子时机错位</div>
+          <div class="cp-freq">命中 E·I · <span class="">2/5</span></div>
+        </div>
+        <div class="cp-card">
+          <div class="cp-name">单点依赖</div>
+          <div class="cp-freq">命中 I · <span class="">1/5</span></div>
+        </div>
+        <div class="cp-card">
+          <div class="cp-name">借鉴多源冲突</div>
+          <div class="cp-freq">命中 H · <span class="">1/5</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="principles-grid">
+      <div class="principle-card" style="--principle-accent: var(--g-warm);">
+        <div class="principle-num">01</div>
+        <div class="principle-title-cn">三层解耦定位模型</div>
+        <div class="principle-title-en">Three-Layer Decoupled Positioning</div>
+        <div class="principle-desc">任何产品拆成 <b>L-Core（玩法）</b> / <b>L-Mid（叙事）</b> / <b>L-Skin（美术·文化）</b> 三层；任一层替换不影响其他层。立项时先画这三层，进不同区域只换 L-Mid / L-Skin。</div>
+        <div class="principle-do"><b>✓ 应用：</b>A 港口（开箱·拍卖·地区美术）/ H 深海（出海·守望·克苏鲁 vs 北欧）/ I 动物（营救·庇护所·温暖 vs 都市）</div>
+        <div class="principle-dont"><b>✗ 反例：</b>"禁酒令 + 美式帮派"把玩法和文化绑死，进中东 / 穆斯林市场时无法调整。</div>
+        <div class="principle-tags"><span class="principle-tag">A</span><span class="principle-tag">H</span><span class="principle-tag">I</span></div>
+      </div>
+      <div class="principle-card" style="--principle-accent: var(--g-amber);">
+        <div class="principle-num">02</div>
+        <div class="principle-title-cn">分钟级解锁铁律</div>
+        <div class="principle-title-en">Minute-by-Minute Unlock Discipline</div>
+        <div class="principle-desc">前 60 分钟 / 前 21 天，<b>每一分钟 / 每一天</b> 都明确回答：核心爽点是什么 · 新概念解锁是什么 · 情感钩子是什么。立项文档必须有网格表。</div>
+        <div class="principle-do"><b>✓ 应用：</b>A 0-60 分钟每分钟一个新概念 + 每 3 分钟一次开箱；G 禁酒令 D0-D21 每天一个主爽点 + D7/D14/D21 三次毕业仪式</div>
+        <div class="principle-dont"><b>✗ 反例：</b>"第一小时玩家体验核心玩法"这种抽象描述 — 落不到实际帧上。</div>
+        <div class="principle-tags"><span class="principle-tag">A</span><span class="principle-tag">G</span></div>
+      </div>
+      <div class="principle-card" style="--principle-accent: var(--g-mint);">
+        <div class="principle-num">03</div>
+        <div class="principle-title-cn">概念转移与新手保护</div>
+        <div class="principle-title-en">Concept Handoff & Newbie Protection</div>
+        <div class="principle-desc">新概念 B 解锁时，旧概念 A 至少自动化 70% 或消失；每次关键升级后给玩家 <b>至少 10 分钟</b> 纯体验期（不再塞新东西），关键资源自动补满。</div>
+        <div class="principle-do"><b>✓ 应用：</b>A 开第 2 家店时第 1 家自动化只保留"收入通知"；E 新系统开启时旧系统自动演示 3 次</div>
+        <div class="principle-dont"><b>✗ 反例：</b>D7 同时开新店 + 新收纳 + 新装修 + 新会员 + 新员工 — 玩家"晕"。</div>
+        <div class="principle-tags"><span class="principle-tag">A</span><span class="principle-tag">E</span></div>
+      </div>
+      <div class="principle-card" style="--principle-accent: var(--g-cool);">
+        <div class="principle-num">04</div>
+        <div class="principle-title-cn">情绪节拍架构</div>
+        <div class="principle-title-en">Emotional Beat Architecture</div>
+        <div class="principle-desc">情感钩子不是"某个等级触发"，而是在玩家 <b>情绪曲线的正确位置</b> 触发 — 玩家不会在开心时接受悲伤，不会在疲惫时接受深度；会在平静时接受转折。</div>
+        <div class="principle-do"><b>✓ 应用：</b>E 父亲笔记 P2 不是 D3 固定触发，而是"玩家买 10 次盒子毫无收获时的那一刻"</div>
+        <div class="principle-dont"><b>✗ 反例：</b>"D3 触发悲伤剧情" — 玩家可能正在开箱爽到天，根本不接受。</div>
+        <div class="principle-tags"><span class="principle-tag">E</span></div>
+      </div>
+      <div class="principle-card" style="--principle-accent: var(--g-warm);">
+        <div class="principle-num">05</div>
+        <div class="principle-title-cn">身份连续性模型</div>
+        <div class="principle-title-en">Identity Continuity Model</div>
+        <div class="principle-desc">身份升级是 <b>累积</b>，不是切换：核心资产跨身份永久有效 · UI 不换新内容叠加旧内容 · 新身份保留旧身份不是抛弃。</div>
+        <div class="principle-do"><b>✓ 应用：</b>E 店主 → 经理 → IP 颠覆者，UR 卡永久保留；G T1 蒸馏工 → T5 议员，第一家店吧台永久保留；I 庇护所 → 联盟总部，所有动物永久陪伴</div>
+        <div class="principle-dont"><b>✗ 反例：</b>"D30 后你不再是店主，你是经理" — 玩家感受是 <b>被剥夺</b>，而不是被晋升。</div>
+        <div class="principle-tags"><span class="principle-tag">E</span><span class="principle-tag">G</span><span class="principle-tag">I</span></div>
+      </div>
+      <div class="principle-card" style="--principle-accent: var(--g-mint);">
+        <div class="principle-num">06</div>
+        <div class="principle-title-cn">核心资产保险</div>
+        <div class="principle-title-en">Core Asset Shield</div>
+        <div class="principle-desc">玩家的核心稀有资产（UR 卡 / 救助过的动物 / 家族核心 NPC）必须 <b>永久保险</b>：主场易手 / 服务器合并 / 版本更新都不能剥夺。</div>
+        <div class="principle-do"><b>✓ 应用：</b>E UR 卡在主场易手时不被转移；I 救助过的动物在战斗失败时不会死亡</div>
+        <div class="principle-dont"><b>✗ 反例：</b>"Boss 战失败你会失去一位队友" — 玩家感受是被惩罚，直接弃游。</div>
+        <div class="principle-tags"><span class="principle-tag">E</span><span class="principle-tag">I</span></div>
+      </div>
+      <div class="principle-card" style="--principle-accent: var(--g-amber);">
+        <div class="principle-num">07</div>
+        <div class="principle-title-cn">多轨路径 + 退出口</div>
+        <div class="principle-title-en">Multi-Path & Escape Routes</div>
+        <div class="principle-desc">重度内容（SLG / PvP / 高压战斗）必须有 <b>至少 2 条路径</b> 到达同一目标，其中 1 条是"轻度路径"（单机党 / 社恐党可走），所有路径同终点。</div>
+        <div class="principle-do"><b>✓ 应用：</b>G D21+ 单机派 95% 机制共享只缺 PvP；I 三路径玩家获得同等动物收益，只是战斗强度不同；A 4 阶段 SLG PvE 优先</div>
+        <div class="principle-dont"><b>✗ 反例：</b>"只有 PvP 才能获得终局内容" — 70% 玩家被挡在门外。</div>
+        <div class="principle-tags"><span class="principle-tag">A</span><span class="principle-tag">G</span><span class="principle-tag">I</span></div>
+      </div>
+      <div class="principle-card" style="--principle-accent: var(--g-cool);">
+        <div class="principle-num">08</div>
+        <div class="principle-title-cn">渐进式投放</div>
+        <div class="principle-title-en">Gradual Deployment</div>
+        <div class="principle-desc">重度玩法（SLG / 高压战斗 / 深度策略）<b>不要一次性投放</b>：PvE 展示 → 轻 PvP → 中 PvP → 重 PvP 四阶段，每阶段之间 ≥ 3 天稳定期。</div>
+        <div class="principle-do"><b>✓ 应用：</b>A PvE 10 天 → 轻 PvP 5 天 → 中 PvP 5 天 → 重 PvP 可选；G D21 家族会议让玩家选单机 / 社交派</div>
+        <div class="principle-dont"><b>✗ 反例：</b>"D15 开联盟战 + D15 开跨服 PvP + D15 开赛季" — 玩家被海量机制淹没。</div>
+        <div class="principle-tags"><span class="principle-tag">A</span><span class="principle-tag">G</span><span class="principle-tag">I</span></div>
+      </div>
+      <div class="principle-card" style="--principle-accent: var(--g-warm);">
+        <div class="principle-num">09</div>
+        <div class="principle-title-cn">借鉴多源的单一主导</div>
+        <div class="principle-title-en">Single-Dominant Reference</div>
+        <div class="principle-desc">多个借鉴源（MPH + DREDGE + 克苏鲁 + Frostpunk）必须明确 <b>1 个主导（70%+）</b> + <b>2-3 个辅助点缀</b>（单一机制片段，剥离原语境）。</div>
+        <div class="principle-do"><b>✓ 应用：</b>H 深海守望者 = MPH 主导 70% + DREDGE 异常鱼 + 克苏鲁视觉线索 + Frostpunk 灯油计</div>
+        <div class="principle-dont"><b>✗ 反例：</b>"玩法 = MPH 40% + DREDGE 30% + Frostpunk 30%" — 玩家感受是"四不像"。</div>
+        <div class="principle-tags"><span class="principle-tag">H</span></div>
+      </div>
+      <div class="principle-card" style="--principle-accent: var(--g-mint);">
+        <div class="principle-num">10</div>
+        <div class="principle-title-cn">内容生产并行化</div>
+        <div class="principle-title-en">Parallel Content Production</div>
+        <div class="principle-desc">60+ 天留存需多条并行内容线（主线 / 支线 / LiveOps），不把内容压在单一线上；任何单点失败不让整个产品崩盘，各线共享资产减少成本。</div>
+        <div class="principle-do"><b>✓ 应用：</b>I 三条内容线并行（主线季度 1 新篇 + 支线反派每月 + LiveOps 社区每周）</div>
+        <div class="principle-dont"><b>✗ 反例：</b>"一条主线 8 章故事 + 无其他内容" — 剧情团队 burnout = 产品停更。</div>
+        <div class="principle-tags"><span class="principle-tag">I</span></div>
+      </div>
+    </div>
+
+    <div style="padding: 18px 22px; background: rgba(255,215,0,0.05); border: 1px dashed rgba(255,215,0,0.3); border-radius: 14px; color: var(--text-secondary); font-size: 0.88em; line-height: 1.7;">
+      <strong style="color:var(--accent-amber);">下游使用：</strong>10 原则 → 映射到 <strong>23 项 P0 立项自检表</strong>（切到上方"✅ P0 立项自检"页签）。立项前逐项核对，合格线 20/23。<br>
+      <strong style="color:var(--accent-amber);">原始素材：</strong><code>ppt-master/projects/核心玩法共性教训_CROSS_PROJECT_GAMEPLAY_INSIGHTS.md</code> · 各项目 <code>核心玩法修订_CORE_GAMEPLAY_FIX.md</code>
+    </div>
+
+  </section>
+
+  <section class="tab-panel" data-tab="checklist" role="tabpanel">
+
+    <div class="section-title">P0 立项自检表 · 23 项（交互式）</div>
+
+    <div class="checklist-header">
+      <div class="checklist-header-title">🎯 立项上会前的 23 项核心玩法质量门禁</div>
+      <p>基于 5 项目（A / E / G / H / I）深度修订后沉淀的 <strong class="hl-amber">10 条可复用设计原则</strong> → 映射为 23 条具体自检条目。立项文档作者在上内部评审会前逐项回答，<strong class="hl-amber">通过 20 / 23 以上</strong>视为立项质量及格。</p>
+      <p>每项 3 态：<strong style="color:var(--accent-mint);">✓ PASS</strong>（有证据 · 完全通过） / <strong style="color:var(--accent-amber);">~ 部分</strong>（部分达成 · 评审时主动说明） / <strong style="color:var(--accent-rose);">✗ 未通过</strong>（需返工）。再点一次当前态 = 回到"未回答"。本地 localStorage 自动保存，不会丢。</p>
+    </div>
+
+    <div class="checklist-dashboard">
+      <div class="dashboard-dial">
+        <svg class="dial-svg" viewBox="0 0 120 120" aria-hidden="true">
+          <defs>
+            <linearGradient id="dialGrad" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0%" stop-color="#ffd700"/>
+              <stop offset="50%" stop-color="#86efac"/>
+              <stop offset="100%" stop-color="#60a5fa"/>
+            </linearGradient>
+          </defs>
+          <circle class="dial-bg" cx="60" cy="60" r="52"/>
+          <circle id="dial-fill" class="dial-fill" cx="60" cy="60" r="52" stroke-dasharray="0 326.7"/>
+        </svg>
+        <div class="dial-label">
+          <span class="count" id="dial-count">0</span>
+          <span class="total">/ 23 PASS</span>
+        </div>
+      </div>
+      <div class="dashboard-verdict-wrap">
+        <span class="verdict-badge none" id="verdict-badge">? 未判定 · 开始答题</span>
+        <div class="verdict-breakdown" id="verdict-breakdown">
+          ✓ 通过 <strong style="color:#86efac">0</strong> / ~ 部分 <strong style="color:#fde047">0</strong> / ✗ 未通过 <strong style="color:#fca5a5">0</strong> / ? 未回答 23 · 合格线 ≥ 20
+        </div>
+      </div>
+      <div class="dashboard-actions">
+        <button class="dash-btn" id="dash-export" type="button">📋 导出结果</button>
+        <button class="dash-btn danger" id="dash-reset" type="button">🗑 重置</button>
+      </div>
+    </div>
+
+    <div class="check-groups-wrap">
+      <div class="check-group" data-group="position">
+        <div class="check-group-head">
+          <span class="check-group-title">3.1 · 定位层自检（5 项）</span>
+          <span class="check-group-stat" data-group-stat="position">0 / 5</span>
+        </div>
+        <div class="check-group-desc">对应原则 1（三层解耦定位模型）</div>
+          <div class="check-item" data-id="p0_1">
+            <div class="check-toggle">
+              <button class="check-state" data-state="pass" type="button">✓ PASS</button>
+              <button class="check-state" data-state="part" type="button">~ 部分</button>
+              <button class="check-state" data-state="fail" type="button">✗ 未通过</button>
+            </div>
+            <div class="check-body">
+              <div class="check-title"><span class="check-id">#1</span>三层解耦明确</div>
+              <div class="check-evidence">立项文档是否显式画出 L-Core / L-Mid / L-Skin 三层结构？</div>
+              <div class="check-expand" role="button">▼ 展开证据要求 / 反例 / 参考</div>
+              <div class="check-details"><div class="detail-line"><span class="detail-key">证据要求：</span>Slide / 文档中的一张图或一段表，明确说明三层内容</div><div class="detail-line"><span class="detail-key">反例：</span>只讲"玩法"和"题材"，没把核心机制 / 叙事 / 美术拆开</div><div class="detail-line"><span class="detail-key">参考项目：</span>A 港口 Slide 05+11 / H 深海 Slide 12</div></div>
+            </div>
+          </div>
+          <div class="check-item" data-id="p0_2">
+            <div class="check-toggle">
+              <button class="check-state" data-state="pass" type="button">✓ PASS</button>
+              <button class="check-state" data-state="part" type="button">~ 部分</button>
+              <button class="check-state" data-state="fail" type="button">✗ 未通过</button>
+            </div>
+            <div class="check-body">
+              <div class="check-title"><span class="check-id">#2</span>L-Core 跨文化验证</div>
+              <div class="check-evidence">核心玩法机制是否验证过在 ≥ 2 个文化圈都能玩？</div>
+              <div class="check-expand" role="button">▼ 展开证据要求 / 反例 / 参考</div>
+              <div class="check-details"><div class="detail-line"><span class="detail-key">证据要求：</span>类似品跑量数据（MPH / Schedule I / TCG Simulator）或内部小规模 playtest 跨区数据</div><div class="detail-line"><span class="detail-key">反例：</span>只在东亚或只在西方测过，直接假设全球通吃</div></div>
+            </div>
+          </div>
+          <div class="check-item" data-id="p0_3">
+            <div class="check-toggle">
+              <button class="check-state" data-state="pass" type="button">✓ PASS</button>
+              <button class="check-state" data-state="part" type="button">~ 部分</button>
+              <button class="check-state" data-state="fail" type="button">✗ 未通过</button>
+            </div>
+            <div class="check-body">
+              <div class="check-title"><span class="check-id">#3</span>L-Mid 叙事版本储备</div>
+              <div class="check-evidence">L-Mid 叙事是否有至少 2 种可替换版本，A 版被拒时 B 版可上？</div>
+              <div class="check-expand" role="button">▼ 展开证据要求 / 反例 / 参考</div>
+              <div class="check-details"><div class="detail-line"><span class="detail-key">证据要求：</span>立项文档附录或单独 Slide，列出 A 版 / B 版的核心叙事要点</div><div class="detail-line"><span class="detail-key">反例：</span>只有 A 版，被合规或某区域市场拒时只能重做</div></div>
+            </div>
+          </div>
+          <div class="check-item" data-id="p0_4">
+            <div class="check-toggle">
+              <button class="check-state" data-state="pass" type="button">✓ PASS</button>
+              <button class="check-state" data-state="part" type="button">~ 部分</button>
+              <button class="check-state" data-state="fail" type="button">✗ 未通过</button>
+            </div>
+            <div class="check-body">
+              <div class="check-title"><span class="check-id">#4</span>L-Skin 区域差异方案</div>
+              <div class="check-evidence">是否已为每个目标区域列出差异化美术 / 文案方案？</div>
+              <div class="check-expand" role="button">▼ 展开证据要求 / 反例 / 参考</div>
+              <div class="check-details"><div class="detail-line"><span class="detail-key">证据要求：</span>区域差异表（US/CA · EU/UK · JP/KR · CN · 中东东南亚），每区至少 2-3 条</div><div class="detail-line"><span class="detail-key">反例：</span>"全球统一美术，只改翻译文字" = 不够</div></div>
+            </div>
+          </div>
+          <div class="check-item" data-id="p0_5">
+            <div class="check-toggle">
+              <button class="check-state" data-state="pass" type="button">✓ PASS</button>
+              <button class="check-state" data-state="part" type="button">~ 部分</button>
+              <button class="check-state" data-state="fail" type="button">✗ 未通过</button>
+            </div>
+            <div class="check-body">
+              <div class="check-title"><span class="check-id">#5</span>核心玩法文化绑定检查</div>
+              <div class="check-evidence">核心玩法有没有硬绑定某个文化元素（毒品/酒/宗教等）？如果有，如何解耦？</div>
+              <div class="check-expand" role="button">▼ 展开证据要求 / 反例 / 参考</div>
+              <div class="check-details"><div class="detail-line"><span class="detail-key">证据要求：</span>一段"如果 X 文化元素不能用，玩法还能不能成立"的论证</div><div class="detail-line"><span class="detail-key">反例：</span>默认"题材没问题"（D 毒枭就是这个问题，后来被 REJECT）</div></div>
+            </div>
+          </div>
+      </div>
+      <div class="check-group" data-group="rhythm">
+        <div class="check-group-head">
+          <span class="check-group-title">3.2 · 节奏层自检（5 项）</span>
+          <span class="check-group-stat" data-group-stat="rhythm">0 / 5</span>
+        </div>
+        <div class="check-group-desc">对应原则 2（分钟级解锁铁律）+ 原则 3（概念密度控制）</div>
+          <div class="check-item" data-id="p0_6">
+            <div class="check-toggle">
+              <button class="check-state" data-state="pass" type="button">✓ PASS</button>
+              <button class="check-state" data-state="part" type="button">~ 部分</button>
+              <button class="check-state" data-state="fail" type="button">✗ 未通过</button>
+            </div>
+            <div class="check-body">
+              <div class="check-title"><span class="check-id">#6</span>分钟级爽点网格（前 60 分钟）</div>
+              <div class="check-evidence">是否有前 60 分钟逐 5 分钟的爽点 / 新概念 / 情感钩表？</div>
+              <div class="check-expand" role="button">▼ 展开证据要求 / 反例 / 参考</div>
+              <div class="check-details"><div class="detail-line"><span class="detail-key">证据要求：</span>网格表（12 行 × 3 列：分钟数 / 爽点 / 情感钩），每格有具体描述不是占位符</div><div class="detail-line"><span class="detail-key">反例：</span>只写"前 30 分钟引导，之后自由发挥" = 不够</div><div class="detail-line"><span class="detail-key">参考项目：</span>A 港口 Q04 对应 Slide 13+14</div></div>
+            </div>
+          </div>
+          <div class="check-item" data-id="p0_7">
+            <div class="check-toggle">
+              <button class="check-state" data-state="pass" type="button">✓ PASS</button>
+              <button class="check-state" data-state="part" type="button">~ 部分</button>
+              <button class="check-state" data-state="fail" type="button">✗ 未通过</button>
+            </div>
+            <div class="check-body">
+              <div class="check-title"><span class="check-id">#7</span>天级爽点网格（前 21-30 天）</div>
+              <div class="check-evidence">是否有前 21-30 天逐日的主爽点 / 新概念 / 情感钩表？</div>
+              <div class="check-expand" role="button">▼ 展开证据要求 / 反例 / 参考</div>
+              <div class="check-details"><div class="detail-line"><span class="detail-key">证据要求：</span>天级网格（21-30 行 × 3 列），每格有具体设计点</div><div class="detail-line"><span class="detail-key">反例：</span>"D1-D7 新手, D7-D14 探索, D14-D21 挑战"这种抽象描述</div><div class="detail-line"><span class="detail-key">参考项目：</span>G 禁酒令 21 天天级爽点表</div></div>
+            </div>
+          </div>
+          <div class="check-item" data-id="p0_8">
+            <div class="check-toggle">
+              <button class="check-state" data-state="pass" type="button">✓ PASS</button>
+              <button class="check-state" data-state="part" type="button">~ 部分</button>
+              <button class="check-state" data-state="fail" type="button">✗ 未通过</button>
+            </div>
+            <div class="check-body">
+              <div class="check-title"><span class="check-id">#8</span>概念密度控制</div>
+              <div class="check-evidence">每次新概念解锁，旧概念是否自动化 > 70%？</div>
+              <div class="check-expand" role="button">▼ 展开证据要求 / 反例 / 参考</div>
+              <div class="check-details"><div class="detail-line"><span class="detail-key">证据要求：</span>每个主要升级点都有"前一层玩法自动化程度"描述</div><div class="detail-line"><span class="detail-key">反例：</span>"D5 开放海外买家，但玩家还要手动鉴宝 + 手动定价 + 手动接单" = 密度失控</div></div>
+            </div>
+          </div>
+          <div class="check-item" data-id="p0_9">
+            <div class="check-toggle">
+              <button class="check-state" data-state="pass" type="button">✓ PASS</button>
+              <button class="check-state" data-state="part" type="button">~ 部分</button>
+              <button class="check-state" data-state="fail" type="button">✗ 未通过</button>
+            </div>
+            <div class="check-body">
+              <div class="check-title"><span class="check-id">#9</span>10 分钟纯体验期</div>
+              <div class="check-evidence">每次关键升级后，是否有至少 10 分钟的纯体验时间（不再塞新概念）？</div>
+              <div class="check-expand" role="button">▼ 展开证据要求 / 反例 / 参考</div>
+              <div class="check-details"><div class="detail-line"><span class="detail-key">证据要求：</span>分钟级表中关键升级点后的 10 分钟格子都标"体验期 / 无新概念"</div><div class="detail-line"><span class="detail-key">反例：</span>5 分钟刚解锁 A，6 分钟就弹 B 提示 = 玩家消化不过来</div></div>
+            </div>
+          </div>
+          <div class="check-item" data-id="p0_10">
+            <div class="check-toggle">
+              <button class="check-state" data-state="pass" type="button">✓ PASS</button>
+              <button class="check-state" data-state="part" type="button">~ 部分</button>
+              <button class="check-state" data-state="fail" type="button">✗ 未通过</button>
+            </div>
+            <div class="check-body">
+              <div class="check-title"><span class="check-id">#10</span>情感钩情绪位置锁定</div>
+              <div class="check-evidence">情感钩子是否明确情绪曲线位置（不是简单的"D3 触发"）？</div>
+              <div class="check-expand" role="button">▼ 展开证据要求 / 反例 / 参考</div>
+              <div class="check-details"><div class="detail-line"><span class="detail-key">证据要求：</span>每个情感钩都有"触发条件 = 玩家情绪状态 X（如连续 10 次开包零稀有）"</div><div class="detail-line"><span class="detail-key">反例：</span>"D2 第 20 分钟触发父亲笔记" = 时间触发不是情绪触发，容易在错情绪下投递</div></div>
+            </div>
+          </div>
+      </div>
+      <div class="check-group" data-group="identity">
+        <div class="check-group-head">
+          <span class="check-group-title">3.3 · 身份层自检（4 项）</span>
+          <span class="check-group-stat" data-group-stat="identity">0 / 4</span>
+        </div>
+        <div class="check-group-desc">对应原则 5（身份连续性）+ 原则 6（核心资产保险）</div>
+          <div class="check-item" data-id="p0_11">
+            <div class="check-toggle">
+              <button class="check-state" data-state="pass" type="button">✓ PASS</button>
+              <button class="check-state" data-state="part" type="button">~ 部分</button>
+              <button class="check-state" data-state="fail" type="button">✗ 未通过</button>
+            </div>
+            <div class="check-body">
+              <div class="check-title"><span class="check-id">#11</span>身份累积而非切换</div>
+              <div class="check-evidence">玩家身份升级是否是累积（店主 → 经理 → 集团老板）而不是切换？</div>
+              <div class="check-expand" role="button">▼ 展开证据要求 / 反例 / 参考</div>
+              <div class="check-details"><div class="detail-line"><span class="detail-key">证据要求：</span>身份升级路径图，每次升级都有"保留什么 / 新增什么"对照</div><div class="detail-line"><span class="detail-key">反例：</span>"D21 从个人户切换到集团，单店关掉" = 玩家辛苦建的店消失 = 身份撕裂</div></div>
+            </div>
+          </div>
+          <div class="check-item" data-id="p0_12">
+            <div class="check-toggle">
+              <button class="check-state" data-state="pass" type="button">✓ PASS</button>
+              <button class="check-state" data-state="part" type="button">~ 部分</button>
+              <button class="check-state" data-state="fail" type="button">✗ 未通过</button>
+            </div>
+            <div class="check-body">
+              <div class="check-title"><span class="check-id">#12</span>核心稀有资产永久保险</div>
+              <div class="check-evidence">稀有卡 / 重要 NPC / 核心建筑是否有永久保留机制？</div>
+              <div class="check-expand" role="button">▼ 展开证据要求 / 反例 / 参考</div>
+              <div class="check-details"><div class="detail-line"><span class="detail-key">证据要求：</span>每个核心稀有资产的"任何情况下都不丢失"条款（主场易手 / 服务器合并 / 版本更新）</div><div class="detail-line"><span class="detail-key">反例：</span>"UR 卡绑主场，主场被抢则 UR 离队" = 玩家弃游信号</div><div class="detail-line"><span class="detail-key">参考项目：</span>E TCG Q10 UR 所有权保险方案</div></div>
+            </div>
+          </div>
+          <div class="check-item" data-id="p0_13">
+            <div class="check-toggle">
+              <button class="check-state" data-state="pass" type="button">✓ PASS</button>
+              <button class="check-state" data-state="part" type="button">~ 部分</button>
+              <button class="check-state" data-state="fail" type="button">✗ 未通过</button>
+            </div>
+            <div class="check-body">
+              <div class="check-title"><span class="check-id">#13</span>视觉连续性</div>
+              <div class="check-evidence">身份升级时 UI / 场景是否延续（不是换主题）？</div>
+              <div class="check-expand" role="button">▼ 展开证据要求 / 反例 / 参考</div>
+              <div class="check-details"><div class="detail-line"><span class="detail-key">证据要求：</span>升级前后的 UI / 场景对比图，至少 80% 元素保留</div><div class="detail-line"><span class="detail-key">反例：</span>"D21 换整套 UI，老玩家认不出自己的主场" = 视觉断裂</div></div>
+            </div>
+          </div>
+          <div class="check-item" data-id="p0_14">
+            <div class="check-toggle">
+              <button class="check-state" data-state="pass" type="button">✓ PASS</button>
+              <button class="check-state" data-state="part" type="button">~ 部分</button>
+              <button class="check-state" data-state="fail" type="button">✗ 未通过</button>
+            </div>
+            <div class="check-body">
+              <div class="check-title"><span class="check-id">#14</span>仪式感 + 永久特权</div>
+              <div class="check-evidence">每次身份升级是否有仪式感 + 永久特权（不只是数值奖励）？</div>
+              <div class="check-expand" role="button">▼ 展开证据要求 / 反例 / 参考</div>
+              <div class="check-details"><div class="detail-line"><span class="detail-key">证据要求：</span>每次升级的"仪式场景（≥ 30 秒） + 永久性奖励（特权徽章 / 解锁能力）"</div><div class="detail-line"><span class="detail-key">反例：</span>"D21 升级为 CEO，奖励 1000 金币" = 和普通任务奖励无异</div></div>
+            </div>
+          </div>
+      </div>
+      <div class="check-group" data-group="multipath">
+        <div class="check-group-head">
+          <span class="check-group-title">3.4 · 多路径层自检（3 项）</span>
+          <span class="check-group-stat" data-group-stat="multipath">0 / 3</span>
+        </div>
+        <div class="check-group-desc">对应原则 7（多路径设计）+ 原则 8（渐进式 PvP）</div>
+          <div class="check-item" data-id="p0_15">
+            <div class="check-toggle">
+              <button class="check-state" data-state="pass" type="button">✓ PASS</button>
+              <button class="check-state" data-state="part" type="button">~ 部分</button>
+              <button class="check-state" data-state="fail" type="button">✗ 未通过</button>
+            </div>
+            <div class="check-body">
+              <div class="check-title"><span class="check-id">#15</span>重度玩法双路径</div>
+              <div class="check-evidence">重度玩法是否有至少 2 条路径到达同一目标？</div>
+              <div class="check-expand" role="button">▼ 展开证据要求 / 反例 / 参考</div>
+              <div class="check-details"><div class="detail-line"><span class="detail-key">证据要求：</span>每个重度目标（如"击败 BOSS"）有 2 条路径（战斗派 / 经营派 / 社交派）</div><div class="detail-line"><span class="detail-key">反例：</span>"BOSS 只能打赢，没有其他解法" = 不玩战斗的玩家直接卡关</div></div>
+            </div>
+          </div>
+          <div class="check-item" data-id="p0_16">
+            <div class="check-toggle">
+              <button class="check-state" data-state="pass" type="button">✓ PASS</button>
+              <button class="check-state" data-state="part" type="button">~ 部分</button>
+              <button class="check-state" data-state="fail" type="button">✗ 未通过</button>
+            </div>
+            <div class="check-body">
+              <div class="check-title"><span class="check-id">#16</span>轻度玩家退出口</div>
+              <div class="check-evidence">是否有 1 条轻度路径让单机党 / 社交恐惧者可走？</div>
+              <div class="check-expand" role="button">▼ 展开证据要求 / 反例 / 参考</div>
+              <div class="check-details"><div class="detail-line"><span class="detail-key">证据要求：</span>轻度路径的完整体验描述（从 D1 到 D180 全程都能走，不被强制进社交）</div><div class="detail-line"><span class="detail-key">反例：</span>"D21 后必须加入联盟才能继续" = 单机党被迫退游</div></div>
+            </div>
+          </div>
+          <div class="check-item" data-id="p0_17">
+            <div class="check-toggle">
+              <button class="check-state" data-state="pass" type="button">✓ PASS</button>
+              <button class="check-state" data-state="part" type="button">~ 部分</button>
+              <button class="check-state" data-state="fail" type="button">✗ 未通过</button>
+            </div>
+            <div class="check-body">
+              <div class="check-title"><span class="check-id">#17</span>SLG 四阶段投放</div>
+              <div class="check-evidence">SLG 内容是否分 4 阶段逐步加强，不是一次性投放？</div>
+              <div class="check-expand" role="button">▼ 展开证据要求 / 反例 / 参考</div>
+              <div class="check-details"><div class="detail-line"><span class="detail-key">证据要求：</span>PvE 前置（10 天）→ 轻 PvP（5 天）→ 中 PvP（5 天）→ 重 PvP（可选）的明确排期</div><div class="detail-line"><span class="detail-key">反例：</span>"D7 直接开联盟战" = PvP 落差过大，玩家一次性被迫切换节奏</div></div>
+            </div>
+          </div>
+      </div>
+      <div class="check-group" data-group="reference">
+        <div class="check-group-head">
+          <span class="check-group-title">3.5 · 借鉴层自检（2 项）</span>
+          <span class="check-group-stat" data-group-stat="reference">0 / 2</span>
+        </div>
+        <div class="check-group-desc">对应原则 9（单一主导 + 辅助点缀）</div>
+          <div class="check-item" data-id="p0_18">
+            <div class="check-toggle">
+              <button class="check-state" data-state="pass" type="button">✓ PASS</button>
+              <button class="check-state" data-state="part" type="button">~ 部分</button>
+              <button class="check-state" data-state="fail" type="button">✗ 未通过</button>
+            </div>
+            <div class="check-body">
+              <div class="check-title"><span class="check-id">#18</span>借鉴源主辅明确</div>
+              <div class="check-evidence">多个借鉴源，是否明确 1 个主导（60%+） + 2-3 个辅助（各 10-15%）？</div>
+              <div class="check-expand" role="button">▼ 展开证据要求 / 反例 / 参考</div>
+              <div class="check-details"><div class="detail-line"><span class="detail-key">证据要求：</span>借鉴源结构图，每个源的"借鉴比例"和"借鉴哪些具体元素"</div><div class="detail-line"><span class="detail-key">反例：</span>"融合 MPH 40% + DREDGE 30% + Frostpunk 30%" = 四不像</div></div>
+            </div>
+          </div>
+          <div class="check-item" data-id="p0_19">
+            <div class="check-toggle">
+              <button class="check-state" data-state="pass" type="button">✓ PASS</button>
+              <button class="check-state" data-state="part" type="button">~ 部分</button>
+              <button class="check-state" data-state="fail" type="button">✗ 未通过</button>
+            </div>
+            <div class="check-body">
+              <div class="check-title"><span class="check-id">#19</span>辅助借鉴语境剥离</div>
+              <div class="check-evidence">每个辅助借鉴源是否明确剥离哪些文化 / 道德语境？</div>
+              <div class="check-expand" role="button">▼ 展开证据要求 / 反例 / 参考</div>
+              <div class="check-details"><div class="detail-line"><span class="detail-key">证据要求：</span>每个辅助源的"保留什么 / 剥离什么"对照表</div><div class="detail-line"><span class="detail-key">反例：</span>直接照搬 Frostpunk 的"末日 + 道德抉择 + 资源管理"全套 = 风格违和</div></div>
+            </div>
+          </div>
+      </div>
+      <div class="check-group" data-group="content">
+        <div class="check-group-head">
+          <span class="check-group-title">3.6 · 内容层自检（2 项）</span>
+          <span class="check-group-stat" data-group-stat="content">0 / 2</span>
+        </div>
+        <div class="check-group-desc">对应原则 10（内容生产并行化）</div>
+          <div class="check-item" data-id="p0_20">
+            <div class="check-toggle">
+              <button class="check-state" data-state="pass" type="button">✓ PASS</button>
+              <button class="check-state" data-state="part" type="button">~ 部分</button>
+              <button class="check-state" data-state="fail" type="button">✗ 未通过</button>
+            </div>
+            <div class="check-body">
+              <div class="check-title"><span class="check-id">#20</span>60+ 天内容并行线</div>
+              <div class="check-evidence">是否有多条并行内容线（主线 + 支线 + LiveOps），不是单一内容线？</div>
+              <div class="check-expand" role="button">▼ 展开证据要求 / 反例 / 参考</div>
+              <div class="check-details"><div class="detail-line"><span class="detail-key">证据要求：</span>三条内容线的月更频率（主线季度 1 章 / 支线每月 / LiveOps 每周）</div><div class="detail-line"><span class="detail-key">反例：</span>"一条主线 8 章故事 + 无其他内容" = 剧情团队 burnout = 产品停更</div></div>
+            </div>
+          </div>
+          <div class="check-item" data-id="p0_21">
+            <div class="check-toggle">
+              <button class="check-state" data-state="pass" type="button">✓ PASS</button>
+              <button class="check-state" data-state="part" type="button">~ 部分</button>
+              <button class="check-state" data-state="fail" type="button">✗ 未通过</button>
+            </div>
+            <div class="check-body">
+              <div class="check-title"><span class="check-id">#21</span>内容线资产共享</div>
+              <div class="check-evidence">并行内容线之间是否共享资产（动物 / 场景 / NPC），减少生产成本？</div>
+              <div class="check-expand" role="button">▼ 展开证据要求 / 反例 / 参考</div>
+              <div class="check-details"><div class="detail-line"><span class="detail-key">证据要求：</span>资产复用表，每个核心资产在多少条内容线出现</div><div class="detail-line"><span class="detail-key">反例：</span>"主线用 A，支线用 B，LiveOps 用 C，三套独立生产" = 内容团队超载</div></div>
+            </div>
+          </div>
+      </div>
+      <div class="check-group" data-group="boundary">
+        <div class="check-group-head">
+          <span class="check-group-title">3.7 · 边界层自检（2 项）</span>
+          <span class="check-group-stat" data-group-stat="boundary">0 / 2</span>
+        </div>
+        <div class="check-group-desc">对应原则：明确边界 + 降级路径</div>
+          <div class="check-item" data-id="p0_22">
+            <div class="check-toggle">
+              <button class="check-state" data-state="pass" type="button">✓ PASS</button>
+              <button class="check-state" data-state="part" type="button">~ 部分</button>
+              <button class="check-state" data-state="fail" type="button">✗ 未通过</button>
+            </div>
+            <div class="check-body">
+              <div class="check-title"><span class="check-id">#22</span>明确不做什么</div>
+              <div class="check-evidence">是否明确"不做"什么？（范围收敛）</div>
+              <div class="check-expand" role="button">▼ 展开证据要求 / 反例 / 参考</div>
+              <div class="check-details"><div class="detail-line"><span class="detail-key">证据要求：</span>立项文档有"本项目不做 X / Y / Z"的明确声明，至少 5 条</div><div class="detail-line"><span class="detail-key">反例：</span>只讲"要做什么"，范围无上限 → 团队过载</div></div>
+            </div>
+          </div>
+          <div class="check-item" data-id="p0_23">
+            <div class="check-toggle">
+              <button class="check-state" data-state="pass" type="button">✓ PASS</button>
+              <button class="check-state" data-state="part" type="button">~ 部分</button>
+              <button class="check-state" data-state="fail" type="button">✗ 未通过</button>
+            </div>
+            <div class="check-body">
+              <div class="check-title"><span class="check-id">#23</span>降级 / 退出路径</div>
+              <div class="check-evidence">是否有降级 / 退出路径（任何机制失败时的备用方案）？</div>
+              <div class="check-expand" role="button">▼ 展开证据要求 / 反例 / 参考</div>
+              <div class="check-details"><div class="detail-line"><span class="detail-key">证据要求：</span>风险决策树，每个风险项对应"触发条件 → 级别 → 执行动作"三元组</div><div class="detail-line"><span class="detail-key">反例：</span>"风险矩阵"只列"风险 → 规避方案"，没有"如果 X 发生 → 做 Y"的决策树</div><div class="detail-line"><span class="detail-key">参考项目：</span>A 港口 Slide 19 风险 8 项决策树</div></div>
+            </div>
+          </div>
+      </div>
+    </div>
+
+    <div style="padding: 18px 22px; background: rgba(255,215,0,0.05); border: 1px dashed rgba(255,215,0,0.3); border-radius: 14px; color: var(--text-secondary); font-size: 0.86em; line-height: 1.7; margin-top: 18px;">
+      <strong style="color:var(--accent-amber);">5 项目 Q1 2026 复审参考数据：</strong>A 港口 21/23 PASS · G 禁酒令 22/23 PASS · I 动物 19/23 CONDITIONAL · E TCG 19/23 CONDITIONAL · H 深海 17/23 REJECT 返工 · D 毒枭 10/23 REJECT 结构性。<br>
+      <strong style="color:var(--accent-amber);">教训：</strong>H 深海当初立项时 17/23，如果用本模板应当 REJECT 返工；实际上了会后才暴露 6 项 P0。<br>
+      <strong style="color:var(--accent-amber);">原始模板：</strong><code>ppt-master/projects/立项P0自检表模板_PROJECT_PRE_LAUNCH_CHECKLIST.md</code>（完整版含结果归档模板 / 参考项目索引 / 维护迭代规则）
+    </div>
+
+  </section>
+
+  <!-- 核心洞察 -->
+  <div class="insight-card">
+    <div class="insight-title">核心洞察 · 数据告诉我们的 6 件事</div>
+    <ul>
+      <li><strong>① 题材受众极度区域化：</strong>同是"叙事经营"，Beholder 俄语 38.8% 而 TCG Card Shop 俄语仅 2.6%。题材选择必须先看 Steam 语言分布而不是脑补。</li>
+      <li><strong>② 日本 Steam 几乎不存在，但移动端可以打：</strong>DREDGE 日语 Steam 真实 0.53%（之前我误判 12%），但 DREDGE+ 在 App Store 拿下 2025 iPad 年度游戏 + Apple Design Award——<strong>日本一定要走 App Store，不能参考 Steam 数据做决策</strong>。</li>
+      <li><strong>③ 拆包/开箱是跨文化通用爽点：</strong>Schedule I（毒品拆包）97%、TCG Card Shop（卡牌拆包）97%、Storage Hunter（仓库拆包）79%——跨题材全部高分。港口开箱方向有天然普适性。</li>
+      <li><strong>④ 玩法骨架可迁移，题材必须本地化：</strong>Schedule I 的"生产-分销-体验"骨架放到禁酒令 / 茶叶走私 / 咖啡黑市都能跑通，关键看买量合规与文化共鸣。</li>
+      <li><strong>⑤ 英语区永远是基本盘：</strong>8 个原型平均英语占比 55%，任何海外项目的第一用户必须是英语玩家。中文/日韩是加分项而非主盘。</li>
+      <li><strong>⑥ 买量合规决定生死，不是题材好坏：</strong>Schedule I 原味爽感拉满（97% 好评 / 45.9 万峰值）但 Meta / Google / AppLovin 全部封禁素材，做手游 SLG 没有买量就等于没有规模。任何题材上马前必须先过合规线（方向 G 禁酒令 vs 方向 D 原味毒枭是最鲜明对比）。</li>
+    </ul>
+  </div>
+
+  <!-- 数据来源 -->
+  <div class="data-source-box">
+    <h3>数据来源（全部已交叉验证）</h3>
+    <div class="cite-list">
+      <div>• <a href="https://store.steampowered.com/" target="_blank">Steam 官方评论过滤器</a>（主数据源）</div>
+      <div>• <a href="https://steamdb.info/" target="_blank">SteamDB</a>（峰值玩家交叉）</div>
+      <div>• <a href="https://steamspy.com/" target="_blank">SteamSpy</a>（销量估算）</div>
+      <div>• <a href="https://steamcharts.com/" target="_blank">Steam Charts</a>（历史趋势）</div>
+      <div>• <a href="https://steambase.io/" target="_blank">Steambase</a>（玩家趋势可视化）</div>
+      <div>• <a href="https://playtracker.net/" target="_blank">PlayTracker</a>（触达人数）</div>
+      <div>• <a href="https://apps.apple.com/" target="_blank">Apple App Store</a>（移动端交叉）</div>
+      <div>• <a href="https://play.google.com/store" target="_blank">Google Play Store</a>（移动端交叉）</div>
+      <div>• <strong>PPT Master 立项评审</strong>（加权分 + P0 清单 · 内部）</div>
+      <div>• 广告政策：Meta Audience Network / Google Ads / AppLovin / Unity Ads</div>
+    </div>
+    <p style="margin-top: 12px; color: #6b7280;">
+      ※ 数据更新时间：2026-04-20 · 本页所有语言分布数据来自 Steam 评论页真实过滤器计数，非推算<br>
+      ※ v3 已更正 DREDGE 日语 12%（幻觉） → 真实 0.53%（282/53246）<br>
+      ※ v4 新增同步：6 个方向加权评审分、裁决、P0 清单 — 原始材料见 <code>ppt-master/projects/review-summary.md</code><br>
+      ※ v4.1 新增 9 维度 × 6 项目完整评分矩阵（第四部分内）· 维护文档 §3 新增"原型筛选漏斗 + 档位推导 scorecard"<br>
+      ※ v4.2 评审框架精简：9 维 → 7 维（移除「落地-团队/排期/预算」「演讲-PPT 表达力」）· 加权总分按 7 维均值重算 · E/I 排名交换 · 第四部分新增「决策一览 Summary」表 · 6 项目 PPT 文档名挂 Google Slides 超链接（企业账户权限内可用）<br>
+      ※ v4.3 新增第四部分"玩法深度修订进展"：5 个 CONDITIONAL PASS 项目（A/E/G/H/I）各写一份 <code>核心玩法修订_CORE_GAMEPLAY_FIX.md</code>，合计 19 条修订 · 横向教训沉淀 10 条可复用设计原则 + 23 项立项 P0 自检表 · 本轮仅处理玩法维度（循环/节点/过渡/钩子/定位），付费/买量/合规/法律风险另行处理<br>
+      ※ v4.4 落地闭环：5 份 <code>design_spec.md</code> 追加 §XII 修订 ribbon + 新增修订摘要 Slide（A/E/H/I-29、G-27） + <code>exports/*.pptx</code> 重生成 + <code>立项P0自检表模板_PROJECT_PRE_LAUNCH_CHECKLIST.md</code> 落地 + <code>_gdrive_upload/</code> 工具链（OAuth 指南 + <code>gdrive_upload.py</code> 批量覆盖脚本）· 分数显示升级为「原分 → 目标分 预期」双值展示（目标分为淡绿色）<br>
+      ※ v4.5 结构重构为四页签（sticky Tab 导航）：① 原型数据（原内容，8 款 × 44.5 万评论）② 评审 → 修订闭环（原 §四 + v4.4 落地状态）③ 10 条设计原则（从 19 条修订中凝练的可复用原则卡片网格）④ P0 立项自检（23 项交互式 checkbox + 环形仪表盘 + 实时判定 + localStorage 持久化 + 一键导出）· URL hash 可直接定位（<code>#home/#loop/#principles/#checklist</code>）· Figma-inspired design tokens（glassmorphism / soft elevation / motion-ease cubic-bezier）· 移动端自适应（双列 tab + 单列 check-item）<br>
+      ※ 维护指南：<strong>网站信息维护指南_WEBSITE_INFO_MAINTENANCE.md</strong>（同目录）
+    </p>
+  </div>
+
+  <footer>
+    丁开心的游戏观察 · 轻量化 SLG 赛道分析 · v4.5 · 2026-04-20 四页签交互版（在 v4.4 基础上重构为 sticky Tab 四页签：原型数据 / 评审闭环 / 10 条设计原则卡片 / 23 项 P0 交互自检；Figma-inspired design tokens；URL hash 可定位；localStorage 自动保存答题进度；一键导出 Markdown 结果）
+  </footer>
+</div>
+
+<script>
+Chart.defaults.color = '#d1d5db';
+Chart.defaults.borderColor = 'rgba(255,255,255,0.1)';
+
+const palette = [
+  '#3b82f6',
+  '#ef4444',
+  '#f59e0b',
+  '#10b981',
+  '#8b5cf6',
+  '#ec4899',
+  '#14b8a6',
+  '#f97316',
+  '#06b6d4',
+  '#84cc16',
+  '#a855f7',
+  '#64748b',
+  '#fbbf24',
+  '#0ea5e9',
+  '#94a3b8'
+];
+
+// 统一配置：hover 时显示 "占比 + 具体评论数"
+function makeTooltip(total) {
+  return {
+    callbacks: {
+      label: function(context) {
+        const label = context.label || '';
+        const value = context.parsed;
+        const percentage = ((value / total) * 100).toFixed(2);
+        return `${label}: ${percentage}% (${value.toLocaleString()} 条)`;
+      }
+    }
+  };
+}
+
+function commonOptions(total) {
+  return {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: {
+        position: 'right',
+        labels: { font: { size: 11 }, boxWidth: 12, padding: 8 }
+      },
+      tooltip: makeTooltip(total)
+    }
+  };
+}
+
+// === 1. Schedule I (真实 Steam 数据 292,471 总) ===
+new Chart(document.getElementById('chart-schedule1'), {
+  type: 'doughnut',
+  data: {
+    labels: ['英语', '德语', '西班牙语(西)', '俄语', '法语', '波兰语', '葡萄牙语(巴西)', '土耳其语', '简体中文', '繁体中文', '日语', '韩语', '其他'],
+    datasets: [{
+      data: [186574, 20386, 12203, 10403, 6322, 6030, 3668, 3031, 937, 624, 345, 474, 41474],
+      backgroundColor: palette,
+      borderWidth: 0
+    }]
+  },
+  options: commonOptions(292471)
+});
+
+// === 2. TCG Card Shop Simulator (47,061 总) ===
+new Chart(document.getElementById('chart-tcgcard'), {
+  type: 'doughnut',
+  data: {
+    labels: ['英语', '简体中文', '德语', '法语', '西班牙语', '繁体中文', '葡萄牙语(巴西)', '韩语', '日语', '意大利语', '荷兰语', '波兰语', '其他'],
+    datasets: [{
+      data: [31904, 3178, 2195, 1843, 1131, 680, 507, 433, 385, 362, 360, 229, 3854],
+      backgroundColor: palette,
+      borderWidth: 0
+    }]
+  },
+  options: commonOptions(47061)
+});
+
+// === 3. DREDGE (53,246 总 - 用户图片真实数据) ===
+new Chart(document.getElementById('chart-dredge'), {
+  type: 'doughnut',
+  data: {
+    labels: ['英语', '简体中文', '西班牙语(西)', '德语', '葡萄牙语(巴西)', '俄语', '法语', '韩语', '意大利语', '西班牙语(拉美)', '繁体中文', '日语', '土耳其语', '波兰语', '乌克兰语', '其他'],
+    datasets: [{
+      data: [30641, 2970, 1719, 1528, 1422, 1222, 1191, 963, 396, 376, 374, 282, 277, 255, 216, 9414],
+      backgroundColor: palette,
+      borderWidth: 0
+    }]
+  },
+  options: commonOptions(53246)
+});
+
+// === 4. Storage Hunter (3,829 总) ===
+new Chart(document.getElementById('chart-storage'), {
+  type: 'doughnut',
+  data: {
+    labels: ['英语', '德语', '简体中文', '其他（<100条/种）'],
+    datasets: [{
+      data: [1684, 358, 358, 1429],
+      backgroundColor: palette,
+      borderWidth: 0
+    }]
+  },
+  options: commonOptions(3829)
+});
+
+// === 5. Beholder (30,255 总) ===
+new Chart(document.getElementById('chart-beholder'), {
+  type: 'doughnut',
+  data: {
+    labels: ['俄语', '简体中文', '英语', '土耳其语', '葡萄牙语(巴西)', '波兰语', '韩语', '西班牙语', '法语', '繁体中文', '德语', '其他'],
+    datasets: [{
+      data: [8718, 5844, 3021, 1337, 696, 646, 489, 351, 349, 300, 223, 8281],
+      backgroundColor: palette,
+      borderWidth: 0
+    }]
+  },
+  options: commonOptions(30255)
+});
+
+// === 6. Empire of Sin (6,218 总) - 根据通用英语区规律估算 ===
+new Chart(document.getElementById('chart-empire'), {
+  type: 'doughnut',
+  data: {
+    labels: ['英语（主导）', '其他语言合计（未详细公开）'],
+    datasets: [{
+      data: [4500, 1718],
+      backgroundColor: palette,
+      borderWidth: 0
+    }]
+  },
+  options: commonOptions(6218)
+});
+
+// === 7. Undisputed (21,961 总) ===
+new Chart(document.getElementById('chart-undisputed'), {
+  type: 'doughnut',
+  data: {
+    labels: ['英语', '俄语', '西班牙语', '德语', '法语', '波兰语', '土耳其语', '葡萄牙语(巴西)', '其他'],
+    datasets: [{
+      data: [13528, 1046, 815, 538, 520, 290, 277, 218, 4729],
+      backgroundColor: palette,
+      borderWidth: 0
+    }]
+  },
+  options: commonOptions(21961)
+});
+
+// === 8. To The Rescue (2,123 总，未公开细分则标注) ===
+new Chart(document.getElementById('chart-rescue'), {
+  type: 'doughnut',
+  data: {
+    labels: ['英语（主导，占比 unknown）', '其他语言（评论数不足细分）'],
+    datasets: [{
+      data: [1720, 403],
+      backgroundColor: palette,
+      borderWidth: 0
+    }]
+  },
+  options: commonOptions(2123)
+});
+
+// === 总体聚合（基于 7 款真实数据原型，去除无细分的 Empire/Rescue） ===
+// 聚合：Schedule I + TCG + DREDGE + Storage + Beholder + Undisputed
+const overall = {
+  english: 186574 + 31904 + 30641 + 1684 + 3021 + 13528,
+  russian: 10403 + 0 + 1222 + 0 + 8718 + 1046,
+  schinese: 937 + 3178 + 2970 + 358 + 5844 + 0,
+  german: 20386 + 2195 + 1528 + 358 + 223 + 538,
+  spanish: 12203 + 1131 + 1719 + 0 + 351 + 815,
+  french: 6322 + 1843 + 1191 + 0 + 349 + 520,
+  turkish: 3031 + 0 + 277 + 0 + 1337 + 0,
+  polish: 6030 + 229 + 255 + 0 + 646 + 290,
+  brazilian: 3668 + 507 + 1422 + 0 + 696 + 218,
+  korean: 474 + 433 + 963 + 0 + 489 + 0,
+  tchinese: 624 + 680 + 374 + 0 + 300 + 0,
+  japanese: 345 + 385 + 282 + 0 + 0 + 0,
+  italian: 1739 + 362 + 396 + 0 + 0 + 0,
+};
+const overallTotal = Object.values(overall).reduce((a, b) => a + b, 0);
+
+new Chart(document.getElementById('chart-overall'), {
+  type: 'doughnut',
+  data: {
+    labels: [
+      '英语 (North America + EU + AU)',
+      '俄语 (俄罗斯 + CIS)',
+      '简体中文 (中国大陆)',
+      '德语 (德国 + 奥地利)',
+      '西班牙语 (西班牙 + LatAm)',
+      '法语 (法国 + 比利时 + 加)',
+      '土耳其语 (土耳其)',
+      '波兰语 (波兰)',
+      '葡萄牙语 (巴西)',
+      '韩语 (韩国)',
+      '繁体中文 (港澳台)',
+      '日语 (日本)',
+      '意大利语 (意大利)'
+    ],
+    datasets: [{
+      data: [
+        overall.english,
+        overall.russian,
+        overall.schinese,
+        overall.german,
+        overall.spanish,
+        overall.french,
+        overall.turkish,
+        overall.polish,
+        overall.brazilian,
+        overall.korean,
+        overall.tchinese,
+        overall.japanese,
+        overall.italian
+      ],
+      backgroundColor: palette,
+      borderWidth: 0
+    }]
+  },
+  options: commonOptions(overallTotal)
+});
+
+
+// ============================================================
+// v4.5 Tab 切换 + P0 自检表交互（新增）
+// ============================================================
+
+// ----- Tab 切换 -----
+(function() {
+  const STORAGE_KEY = 'slg_v45_active_tab';
+  const VALID = ['home', 'loop', 'principles', 'checklist'];
+  const tabs = document.querySelectorAll('.tab-btn');
+  const panels = document.querySelectorAll('.tab-panel');
+
+  function activate(tabName, push) {
+    if (!VALID.includes(tabName)) tabName = 'home';
+    tabs.forEach(function(b) {
+      const on = b.dataset.tab === tabName;
+      b.classList.toggle('active', on);
+      b.setAttribute('aria-selected', on ? 'true' : 'false');
+    });
+    panels.forEach(function(p) {
+      p.classList.toggle('active', p.dataset.tab === tabName);
+    });
+    if (push && history.replaceState) {
+      history.replaceState(null, '', '#' + tabName);
+    }
+    try { localStorage.setItem(STORAGE_KEY, tabName); } catch(e) {}
+  }
+
+  tabs.forEach(function(b) {
+    b.addEventListener('click', function(e) {
+      activate(b.dataset.tab, true);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+    // radial hover tracking
+    b.addEventListener('mousemove', function(e) {
+      const r = b.getBoundingClientRect();
+      b.style.setProperty('--x', ((e.clientX - r.left) / r.width * 100) + '%');
+      b.style.setProperty('--y', ((e.clientY - r.top) / r.height * 100) + '%');
+    });
+  });
+
+  // 初始化优先级: URL hash > localStorage > default 'home'
+  const hash = location.hash.replace('#', '');
+  let init = 'home';
+  if (VALID.includes(hash)) {
+    init = hash;
+  } else {
+    try {
+      const stored = localStorage.getItem(STORAGE_KEY);
+      if (VALID.includes(stored)) init = stored;
+    } catch(e) {}
+  }
+  activate(init, false);
+
+  // hash 变化同步
+  window.addEventListener('hashchange', function() {
+    const h = location.hash.replace('#', '');
+    if (VALID.includes(h)) activate(h, false);
+  });
+})();
+
+// ----- P0 自检表交互 -----
+(function() {
+  const STORAGE_KEY = 'slg_p0_checklist_v1';
+  let state = {};
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (raw) state = JSON.parse(raw);
+  } catch(e) { state = {}; }
+
+  function save() {
+    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch(e) {}
+  }
+
+  function computeScore() {
+    let pass = 0, part = 0, fail = 0;
+    const items = document.querySelectorAll('.check-item');
+    items.forEach(function(el) {
+      const s = state[el.dataset.id] || 'none';
+      if (s === 'pass') pass++;
+      else if (s === 'part') part++;
+      else if (s === 'fail') fail++;
+    });
+    return { pass: pass, part: part, fail: fail, total: items.length };
+  }
+
+  function computeGroupStats() {
+    const stats = {};
+    document.querySelectorAll('.check-group').forEach(function(g) {
+      const key = g.dataset.group;
+      const total = g.querySelectorAll('.check-item').length;
+      let pass = 0;
+      g.querySelectorAll('.check-item').forEach(function(el) {
+        if ((state[el.dataset.id] || 'none') === 'pass') pass++;
+      });
+      stats[key] = { pass: pass, total: total };
+    });
+    return stats;
+  }
+
+  function render() {
+    // 1) 每项状态渲染
+    document.querySelectorAll('.check-item').forEach(function(el) {
+      const id = el.dataset.id;
+      const s = state[id] || 'none';
+      el.className = 'check-item';
+      if (s !== 'none') el.classList.add('status-' + s);
+      el.querySelectorAll('.check-state').forEach(function(btn) {
+        btn.classList.toggle('active', btn.dataset.state === s);
+        if (btn.dataset.state === s) btn.classList.add(s);
+      });
+    });
+
+    // 2) 仪表盘
+    const score = computeScore();
+    const dialCount = document.getElementById('dial-count');
+    const dialFill = document.getElementById('dial-fill');
+    if (dialCount) dialCount.textContent = score.pass;
+    if (dialFill) {
+      const circum = 2 * Math.PI * 52;
+      const filled = (score.pass / score.total) * circum;
+      dialFill.setAttribute('stroke-dasharray', filled + ' ' + circum);
+    }
+
+    const verdictBadge = document.getElementById('verdict-badge');
+    const verdictBD = document.getElementById('verdict-breakdown');
+    if (verdictBadge) {
+      const answered = score.pass + score.part + score.fail;
+      if (answered === 0) {
+        verdictBadge.textContent = '? 未判定 · 开始答题';
+        verdictBadge.className = 'verdict-badge none';
+      } else if (score.pass >= 20) {
+        verdictBadge.textContent = '✓ PASS · 立项质量及格';
+        verdictBadge.className = 'verdict-badge pass';
+      } else if (score.pass >= 17) {
+        verdictBadge.textContent = '⚠ CONDITIONAL · 返工待定';
+        verdictBadge.className = 'verdict-badge cond';
+      } else {
+        verdictBadge.textContent = '✗ REJECT · 建议返工后再上会';
+        verdictBadge.className = 'verdict-badge rej';
+      }
+    }
+    if (verdictBD) {
+      const unanswered = score.total - score.pass - score.part - score.fail;
+      verdictBD.innerHTML =
+        '✓ 通过 <strong style="color:#86efac">' + score.pass + '</strong> / ' +
+        '~ 部分 <strong style="color:#fde047">' + score.part + '</strong> / ' +
+        '✗ 未通过 <strong style="color:#fca5a5">' + score.fail + '</strong> / ' +
+        '? 未回答 <strong>' + unanswered + '</strong> · 合格线 ≥ 20';
+    }
+
+    // 3) 每组 mini-stat
+    const groupStats = computeGroupStats();
+    document.querySelectorAll('[data-group-stat]').forEach(function(el) {
+      const key = el.dataset.groupStat;
+      if (groupStats[key]) {
+        el.textContent = groupStats[key].pass + ' / ' + groupStats[key].total + ' PASS';
+      }
+    });
+  }
+
+  // 事件: 点击 PASS / 部分 / 未通过（再点同一态 = 清空）
+  document.querySelectorAll('.check-state').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      const item = btn.closest('.check-item');
+      if (!item) return;
+      const id = item.dataset.id;
+      const newState = btn.dataset.state;
+      const current = state[id] || 'none';
+      if (current === newState) {
+        delete state[id];
+      } else {
+        state[id] = newState;
+      }
+      save();
+      render();
+    });
+  });
+
+  // 事件: 展开 / 收起详情
+  document.querySelectorAll('.check-expand').forEach(function(el) {
+    el.addEventListener('click', function() {
+      const d = el.nextElementSibling;
+      if (!d) return;
+      const open = d.classList.toggle('open');
+      el.textContent = open ? '▲ 收起详情' : '▼ 展开证据要求 / 反例 / 参考';
+    });
+  });
+
+  // 事件: 重置
+  const resetBtn = document.getElementById('dash-reset');
+  if (resetBtn) {
+    resetBtn.addEventListener('click', function() {
+      if (confirm('确认重置 23 项自检结果？(本地 localStorage 同步清空)')) {
+        state = {};
+        save();
+        render();
+      }
+    });
+  }
+
+  // 事件: 导出
+  const exportBtn = document.getElementById('dash-export');
+  if (exportBtn) {
+    exportBtn.addEventListener('click', function() {
+      const score = computeScore();
+      const unanswered = score.total - score.pass - score.part - score.fail;
+      const today = new Date().toISOString().slice(0, 10);
+      let text = '# P0 立项自检结果 · ' + today + '\n\n';
+      text += '总分：✓ PASS ' + score.pass + ' / ~ 部分 ' + score.part + ' / ✗ 未通过 ' + score.fail + ' / ? 未回答 ' + unanswered + '（共 ' + score.total + ' 项 · 合格线 ≥ 20）\n\n';
+      if (score.pass >= 20) text += '判定：PASS\n\n';
+      else if (score.pass >= 17) text += '判定：CONDITIONAL（返工待定）\n\n';
+      else text += '判定：REJECT（建议返工后再上会）\n\n';
+      document.querySelectorAll('.check-group').forEach(function(g) {
+        const groupTitle = g.querySelector('.check-group-title');
+        if (groupTitle) text += '\n## ' + groupTitle.textContent.trim() + '\n\n';
+        g.querySelectorAll('.check-item').forEach(function(el) {
+          const id = el.dataset.id;
+          const s = state[id] || 'none';
+          const mark = s === 'pass' ? '[x]' : s === 'part' ? '[!]' : s === 'fail' ? '[X]' : '[ ]';
+          const titleEl = el.querySelector('.check-title');
+          let title = '';
+          if (titleEl) {
+            const clone = titleEl.cloneNode(true);
+            const idSpan = clone.querySelector('.check-id');
+            if (idSpan) idSpan.remove();
+            title = clone.textContent.trim();
+          }
+          text += mark + ' #' + id.replace('p0_', '') + ' ' + title + '\n';
+        });
+      });
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text).then(
+          function() { alert('已复制 ✓\n结果已复制到剪贴板，可粘贴到立项评审附件 / 会议纪要'); },
+          function() { window.prompt('手动复制以下结果：', text); }
+        );
+      } else {
+        window.prompt('手动复制以下结果：', text);
+      }
+    });
+  }
+
+  render();
+})();
+
+</script>
+</body>
+</html>
