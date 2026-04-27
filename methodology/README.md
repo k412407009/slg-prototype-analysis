@@ -163,8 +163,8 @@ A: 核心框架可用, 五维定义要调整。比如 ARPG 的"集体性"权重�
 
 ## 相关文档
 
-- `../steam原型数据分析.html` - Steam 原型数据分析(本目录其它资料)
-- `../网站信息维护指南_WEBSITE_INFO_MAINTENANCE.md` - 相关维护文档
+- `../website/steam原型数据分析.html` - Steam 原型数据分析(本仓库主页面)
+- `../docs/网站信息维护指南_WEBSITE_INFO_MAINTENANCE.md` - 相关维护文档
 
 如果这个工具包帮你做了好的立项决策, 或者你发现了可以改进的地方,
 欢迎在团队内部反馈并更新。

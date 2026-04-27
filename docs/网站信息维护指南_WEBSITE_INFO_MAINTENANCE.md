@@ -1,6 +1,6 @@
 # 轻量化 SLG 赛道 Steam 原型数据分析 · 网站信息维护指南
 
-> 这是 `steam原型数据分析.html`（线上部署为 `https://dingkx-slg.run.ingarena.net`）的**可维护性文档**。
+> 这是 `steam原型数据分析.html` 的**可维护性文档**。
 > 任何人（包括未来的你自己、新来的协作者、交接 agent）拿到这份文档，都能在 15 分钟内回答三件事：
 > **① 网站在讲什么** · **② 信息是从哪儿查到的** · **③ 下次要更新哪里怎么改**。
 
@@ -278,7 +278,7 @@
 | **§一** | 8 款原型卡片 + 饼图 | 每款给出元数据 + Steam 语言分布 + 核心洞察 + 交叉验证链接 | 每张 `.proto-card`；对应 Chart.js `new Chart(...)` 初始化数据 |
 | **§二** | 地区汇总大饼图 | 把 8 款原型的语言数据聚合，给出"英语永远是主盘"的总体结论 | `overall` JS 对象 + `.proto-card` 下的 `.proto-analysis ul` |
 | **§三** | 方向总览表格 + 8 个方向详细卡片 | 决策用：按档位给出每个方向的"参考原型 / 合规 / 海外盘 / SLG 空间" | `<table>` 行；`.direction-block` 块；v4 起新增「立项评审」列 |
-| **§四** | 立项评审进展（v4 新增） | 把 PPT 评审结果同步到原型分析页，形成 "Research → Proposal → Review" 全链路可见 | 新章节，维护时同步 `ppt-master/projects/review-summary.md` |
+| **§四** | 立项评审进展（v4 新增） | 把 PPT 评审结果同步到原型分析页，形成 "Research → Proposal → Review" 全链路可见 | 新章节，维护时同步内部评审汇总 |
 | 结尾 | 核心洞察 6 条 + 数据来源 + footer | 沉淀复用到新方向立项 | `.insight-card ul`；`.data-source-box .cite-list` |
 
 ---
