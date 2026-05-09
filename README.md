@@ -7,7 +7,7 @@
 
 这是一套围绕 **“哪些 Steam 原型值得被改造成轻量化 SLG 并用于海外发行”** 展开的分析资料包，包含三层内容：
 
-1. **网站层**：一个纯静态分析页面，把 8 个 Steam 原型、8 个候选方向、立项评审结果汇总成可视化网页。
+1. **网站层**：一个纯静态分析页面，把 9 个 Steam 原型、9 个候选方向、立项评审结果汇总成可视化网页。
 2. **方法层**：一套可以复用的方法论，解释我们如何从“看起来有意思的题材”收敛到“值得继续立项的方向”。
 3. **工作层**：维护手册、SOP 模板、投放札记，帮助后来者更新数据、复做分析、扩展到新赛道。
 
@@ -23,11 +23,23 @@
 
 | 路径 | 作用 | 适合谁先看 |
 |---|---|---|
+| [线上网站](https://dingkx-slg.run.ingarena.net) | RUN Platform 已部署版本 | 想直接看汇报页的人 |
 | [`website/steam原型数据分析.html`](website/steam原型数据分析.html) | 主分析页面，纯静态单页 | 想先看结论的人 |
+| [`docs/SLG行业养成商业化原型横纵分析报告_SLG_MONETIZATION_PROTOTYPE_HV_REPORT.md`](docs/SLG行业养成商业化原型横纵分析报告_SLG_MONETIZATION_PROTOTYPE_HV_REPORT.md) | SLG 养成、商业化、目标循环的横纵分析报告，发布版 PDF 位于 `website/reports/` | 想看行业原型补全依据的人 |
+| [`docs/SLG立项能力悖论横纵分析报告_SLG_PROJECT_CAPABILITY_PARADOX_HV_REPORT.md`](docs/SLG立项能力悖论横纵分析报告_SLG_PROJECT_CAPABILITY_PARADOX_HV_REPORT.md) | 从组织能力角度解释“发现机会”和“吃到机会”之间的差距 | 想看立项说服与团队能力建设的人 |
 | [`docs/网站信息维护指南_WEBSITE_INFO_MAINTENANCE.md`](docs/网站信息维护指南_WEBSITE_INFO_MAINTENANCE.md) | 维护手册：数据来源、更新规则、版本演化 | 需要维护网站的人 |
 | [`methodology/SOP.md`](methodology/SOP.md) | 4 周选品 SOP，方法论主文档 | 想复用方法做新项目的人 |
 | [`methodology/README.md`](methodology/README.md) | SOP 工具包导读 | 想快速跑通流程的人 |
 | [`投放置品/README.md`](投放置品/README.md) | 投放札记系列导读 | 想理解投放与题材关系的人 |
+
+## 最新 PPT / 方向入口（2026-04-30）
+
+| 方向 | Google Slides | 评审状态 |
+|---|---|---|
+| 方向 I：动物联盟 | [I_动物联盟_动物庇护所+Zootopia情感叙事+My-Perfect-Hotel_20260421_000314](https://docs.google.com/presentation/d/1NyFhmzUPGHLTeZWM3C_JsQiA8l7SqBEP/edit?usp=sharing&ouid=110387310515616113298&rtpof=true&sd=true) | 3.94 · Conditional Pass · 云端同 file_id 已覆盖为最新 PPTX |
+| 方向 B：大陆酒店经营 | [B_大陆酒店_John-Wick+Continental+My-Perfect-Hotel_20260428_145441](https://docs.google.com/presentation/d/1mGIqlni9nVlRl2w5sun3FW54X-pw63KLi-fSOiZ5zsA/edit?usp=sharing) | 4.16 · Conditional Pass |
+| 方向 C：地下拳馆经营 | [C_地下拳馆_Undisputed+Rocky+Fight-Tycoon+My-Perfect-Hotel_20260428_142800](https://docs.google.com/presentation/d/12sI9NErQgFLqp97hsEZYD-qHlbQDzimyVdi9oeoSM8w/edit?usp=sharing) | 4.32 · Pass |
+| 方向 J：防疫区 / 检疫哨站 | [J_防疫区_Quarantine-Zone+Papers-Please+Tower-Defense+My-Perfect-Hotel_20260429_192824](https://docs.google.com/presentation/d/18ZNEqxgLdA9Wi7pjmSjGu1rcBYUpJL4SRee7TpIj3Xg/edit?usp=sharing) | 4.20 · Conditional Pass · P0 × 4 |
 
 ---
 
@@ -47,7 +59,7 @@
 
 按这个顺序：
 
-1. 看网站中的 8 个原型卡片
+1. 看网站中的 9 个原型卡片
 2. 对照 [`docs/网站信息维护指南_WEBSITE_INFO_MAINTENANCE.md`](docs/网站信息维护指南_WEBSITE_INFO_MAINTENANCE.md)
 3. 重点读维护手册里的：
    - 原型是怎么入池的
@@ -70,11 +82,11 @@
 
 ## 网站该怎么看
 
-主页面从上到下可以分成 4 层：
+主页面现在按核心 7 层 + 1 个内部合作页签组织：
 
 ### 1. 原型层：先看“市场上什么东西已经被验证过”
 
-这里展示 8 款 Steam 原型，每一张卡片回答的是：
+这里展示 9 款 Steam 原型，每一张卡片回答的是：
 
 - 它到底热不热
 - 主要是哪些语言用户在玩
@@ -105,26 +117,83 @@
 
 每个方向卡片本质上都在回答三个问题：
 
-1. **买量合规吗？**
+1. **买量成本和素材边界是否可控？**
 2. **海外盘够大吗？**
 3. **SLG 改造空间够不够？**
 
 所以方向卡片不是“创意脑暴”，而是 **立项预判结果**。
 
-### 4. 评审层：看“这个方向值不值得继续推进”
+### 4. 商业化适配层：看“题材该接哪种付费和养成原型”
 
-最后一层是内部立项评审同步结果。它不再回答“题材有没有意思”，而是回答：
+`商业化适配` 页签当前统一按 **16 个商业化养成原型 × 9 个题材** 建模：COK-like、ROK-like、WOS-like、Kingshot/Kingdom Guard-like、Last Asylum-like、疯狂水世界-like、Top War-like、Top Heroes-like、Last War / Last Z-like、Puzzle 4X-like、Evony-like、Mafia-like、Lords Mobile-like、Dragon / Beast-like、Ecology-like、IP / Faction Season-like。它们共同覆盖兵种、克制、战损、重养成、锚点、赛季窗口、理解门槛、投放入口、身份包装、常青运营、核心伙伴、生态题材和阵营赛季等商业化深水层；v4.20 起页面统一使用 16 原型口径，D Nightking 毒枭按 Mafia-like 黑帮买量高 CPI、素材竞争强、需要高预算验证处理。
 
-- 这个方案今天要不要继续投资源
+这一层不是收入预测，而是回答：
+
+- 这个题材应该把重养成放在谁身上
+- 哪个竞品原型的商业化骨架最自然
+- 哪些付费包和投放素材能顺着题材长出来
+
+### 5. SLG 立项判断层：看“外部 SLG 产品是否值得立项”
+
+`SLG 立项判断` 页签把内部经验和外部公开资料合并成一套立项判断框架。它不再用二元标签，而是先把产品放进重度 SLG / 轻量化 SLG 的连续谱里，再拆四种轻量化颗粒度：
+
+- **极轻量**：D0-D1 先用短局、合并、开箱、塔防波次或简单经营承接。代表样本：Last War / Last Z-like；Last Asylum-like 不作为主例，更适合放在中度轻量。
+- **中度轻量**：已经有基地、英雄、队伍或资源队列，但战争压力延后。代表样本：WOS-like、Last Asylum-like、Top Heroes-like。
+- **复合玩法轻量化**：三消、射击、塔防、卡牌、经营、合并等玩法钩子承担理解门槛。代表样本：Kingshot / Kingdom Guard-like、Puzzle 4X-like、疯狂水世界-like、Top War-like。
+- **包装层面轻量化**：广告和新手期看起来轻，但付费和后端仍接近传统重度 4X。代表样本：Evony-like、Mafia-like、Lords Mobile-like、Dragon / Beast-like、Ecology-like、IP / Faction Season-like。
+
+COK-like / ROK-like 在页面中作为重度 SLG 参照，不归入四类轻量化；它们用于校准“后端到底有多重”。
+
+四类轻量化不是平权，当前立项倾向是：
+
+- **第一优先：复合玩法轻量化**。最符合从“SLG+X”转向“X+SLG”的趋势，适合用塔防、三消、经营、卡牌、合并、射击等钩子解释变强，再逐步接联盟、赛季、地图。
+- **第二优先：中度轻量**。不是最轻，但更稳，适合有基地、英雄、设施、队伍成长，并且题材能解释长期压力的方向。
+- **第三：极轻量**。适合测 CTR / CVR / D1 / 前 10 分钟完成率，但不能单独当完整 SLG 方案。
+- **第四：包装层面轻量化**。不是不能做，而是必须按重度 SLG 项目估预算、团队、运营、战损和联盟组织成本。
+
+这一层的目的，是回答一款外部 SLG 产品出现时：
+
+- 它是否符合用户从重度前置转向轻量入口的趋势
+- 它的外部证据、数据和广告政策边界是否足够支撑立项
+- 它能不能在 D7-D30 后承接地图、联盟、赛季和长期付费
+
+### 6. 后端轻重度判定层：看“中后期战争压力和付费核心落在哪里”
+
+`后端轻重度判定` 页签保留主城、行军、付费三问，但判定范围主要是 **D7-D30 之后的后端入口**：养成对象、付费核心、商业化深水层、联盟赛季、多人关系绑定度、主城/行军/飞地规则。它不判断前 10 分钟教程轻不轻，也不把广告入口轻量误读成整体项目轻量。
+
+- **重度后端轻入口**：玩家主城可被攻打，全天候行军/掠夺，付费核心是军队、科技、主城、VIP、护盾、治疗和加速。
+- **角色/卡牌/经营驱动轻后端**：个人基地更像经营或养成场，战争常以限时联盟城战 / 节点争夺呈现，付费核心是英雄抽卡、升星、装备和阵容包。
+- **飞城 / 飞地**：自由飞城、接地飞地、限时节点战会直接影响 PVP 节奏、商业化目标、养成强度和玩家接受度。
+
+这一层的目的不是给产品贴标签，而是避免把“广告看起来像 SLG”“商店标签是 Strategy / 4X”“新手期入口很轻”误读成同一套商业化后端结构。
+
+### 7. 内部评审闭环层：看“这个方向值不值得继续推进”
+
+最后一层是内部 PPT 方向提案的立项评审同步结果。它不再回答“题材有没有意思”，而是回答：
+
+- 这个方案在当前评审周期要不要继续投资源
 - 哪些方向可以继续打磨
 - 哪些方向应该停掉
 - 每个方向的 P0 风险是什么
 
-所以如果你是第一次看，建议：
+所以如果你是第一次看，建议按页面页签从左到右读：
 
-- **先看方向层拿结论**
-- **再看原型层看证据**
-- **最后看评审层决定优先级**
+- **先看原型数据和 9 个题材提案**
+- **再看商业化适配判断怎么落付费和养成**
+- **再看 SLG 立项判断确认趋势、证据和硬门槛**
+- **再看后端轻重度判定确认中后期战争结构和飞城压力**
+- **最后看内部评审闭环、评审沉淀原则和 P0 自检**
+
+### 8. 内部合作纪要层：看“MOMO / 沐睦合作该怎么往后推”
+
+`内部合作纪要` 页签来自 2026-05-07 与 MOMO / 沐睦的 SLG 定制讨论，以及 Mumugames BP。它不是公开市场结论，而是内部推进页：
+
+- 哪些方向进入首批推进：G 禁酒令、J 防疫区
+- 哪些方向只做小预算验证：E 卡牌、B 酒店、H 深海
+- 哪些方向暂缓或低优先：C 拳馆、D 毒枭原味、A 港口开箱、I 动物联盟
+- 合作门槛怎么设：素材测试、2-3 月 MVP、7-8 月 D7、S1 再加 3-4 月
+
+如果只是第一次看网站，可以先读前 7 个核心页签；如果要推进外部定制合作，再看这个内部页签。
 
 ---
 
@@ -211,11 +280,11 @@
 - 这些产品到底是靠什么爽点吃到用户
 - 这些爽点能不能迁移到你要做的结构里
 
-### 第三步：永远先判合规，再谈天花板
+### 第三步：先判买量成本和素材边界，再谈天花板
 
 题材越刺激，往往越容易让人误判它有高潜力。
 
-但如果主流买量渠道和应用商店天然卡死，它就是纸面上的好题材，商业上不成立。方向 D 被降到 D 档，就是这个原因。
+但如果素材池很窄、同类黑帮素材竞争激烈、CPI 明显高于中性经营题材，它就是纸面上的好题材，商业上也可能打不平。方向 D 被降到 D 档，当前核心原因是黑帮买量成本、素材竞争和预算验证压力。
 
 ### 第四步：把“方向”写成可审计记录
 
@@ -276,7 +345,8 @@ bash start.sh
 
 1. 先看方向层和评审层
 2. 重点关注合规、海外盘、素材可拍度
-3. 再读 `投放置品/README.md`
+3. 如果要推进 MOMO / 沐睦合作，再看 `内部合作纪要` 页签里的测试优先级和素材动作
+4. 再读 `投放置品/README.md`
 
 ### 研发 / 设计
 
@@ -301,7 +371,13 @@ slg-prototype-analysis/
 ├── website/
 │   └── steam原型数据分析.html
 ├── docs/
+│   ├── SLG行业养成商业化原型横纵分析报告_SLG_MONETIZATION_PROTOTYPE_HV_REPORT.md
+│   ├── SLG立项能力悖论横纵分析报告_SLG_PROJECT_CAPABILITY_PARADOX_HV_REPORT.md
 │   └── 网站信息维护指南_WEBSITE_INFO_MAINTENANCE.md
+├── outputs/
+│   └── ... 横纵分析导出文件
+├── website/reports/
+│   └── ... 发布版 HTML / PDF 报告
 ├── methodology/
 │   ├── README.md
 │   └── SOP.md

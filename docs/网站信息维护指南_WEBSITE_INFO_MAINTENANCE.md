@@ -11,23 +11,31 @@
 | 字段 | 值 |
 |---|---|
 | 关联页面 | `steam原型数据分析.html`（同目录） |
-| 页面版本 | v4.2（2026-04-20 · 评审框架 9 维 → 7 维精简 + 决策一览 Summary 表 + 6 项目 PPT 工程链接） |
-| 页面上一版 | v4.1 评委会 9×6 矩阵版（同日上午）· v4 评审同步版（同日）· v3 真实数据版（2026-04-16 DREDGE 日语幻觉修正） |
-| 本文档版本 | 2026-04-20（v2）· 增补"§3.6 评审框架 v4.2 精简说明（9→7）"和"§4.7 PPT 工程超链接规范" |
+| 页面版本 | v4.29（2026-05-08 · Top War / Top Heroes 拆分评分） |
+| 页面上一版 | v4.28 8 维评分新增入口人群与后端压力匹配（2026-05-08）· v4.27 MOMO / 沐睦内部合作纪要与推进动作页签（同日）· v4.26 已跑通产品 vs 未跑通立项题材同口径分数回测（同日） |
+| 本文档版本 | 2026-05-08（v26）· 对齐 v4.29 页面，将 Top War 与 Top Heroes 从同一市场验证样本拆为两个独立样本：Top War 按冰封救援/军武合成入口 + 联盟战后端评分，Top Heroes 按竖屏单手 RPG / 英雄探索入口 + 领地后端评分；回测对象从 14 个改为 15 个。延续 v4.28 的 8 维评分体系和“入口人群与后端压力匹配”维度，方向 A 港口开箱因 RNG / 模拟经营入口与战争后端人群错配保持 70.0；延续 v4.27 内部合作纪要页签、v4.26 验证状态标签、v4.25 核心洞察展示范围、v4.24 轻量化方案立项倾向、16 个商业化养成原型当前口径、D 毒枭 Mafia-like 黑帮买量高 CPI 风险、证据等级显性标签和 RUN 发布目录规则 |
 | 部署方式 | RUN Platform 静态托管，`bash start.sh` 起 Python http.server |
 | 外部依赖 | 仅 Chart.js（`cdn.jsdelivr.net`），零后端 |
 
 ---
 
-## 1. 网站在讲什么（一句话 + 三段话）
+## 1. 网站在讲什么（一句话 + 九段话）
 
-**一句话**：用 Steam 官方评论页的真实语言分布，筛选 8 款原型，推导出 8 个"轻量化 SLG + 海外发行"的候选题材方向，并给出立项建议（S+ / S / A+ / A / B+ / B / D）。
+**一句话**：用 Steam 官方评论页的真实语言分布，筛选 9 款原型，推导出 9 个"轻量化 SLG + 海外发行"的候选题材方向，并给出立项建议（S+ / S / A+ / A / B+ / B / D）。
 
-**三段话展开**：
+**九段话展开**：
 
-1. **原型层（Prototype Tier）** — 8 款 Steam 真实热度原型（Schedule I / TCG Card Shop Simulator / DREDGE / Storage Hunter Simulator / Beholder / Empire of Sin / Undisputed / To The Rescue!），每款都给出评论总数、峰值在线、好评率、Steam 语言分布饼图、核心洞察、交叉验证来源。
-2. **方向层（Direction Tier）** — 基于 8 个原型的交叉分析，归纳出 8 个可能做成"轻量化 SLG"的题材方向 A-I，每个方向标注买量合规性、海外盘大小、SLG 改造空间三个维度，按 S+/S/A+/A/B+/B/D 打档。
-3. **洞察层（Insight Tier）** — 6 条跨原型的通用结论（如"拆包是跨文化通用爽点"、"日本 Steam 几乎不存在必须走 App Store"、"买量合规决定生死而不是题材好坏"），指导后续新方向立项时的思考框架。
+1. **原型层（Prototype Tier）** — 9 款 Steam 真实热度原型（Schedule I / TCG Card Shop Simulator / DREDGE / Storage Hunter Simulator / Beholder / Empire of Sin / Undisputed / Quarantine Zone: The Last Check / To The Rescue!），每款都给出评论总数、峰值在线、好评率、Steam 语言分布饼图、核心洞察、交叉验证来源。
+2. **方向层（Direction Tier）** — 基于 9 个原型的交叉分析，归纳出 9 个可能做成"轻量化 SLG"的题材方向 A-J（F 保留跳过），每个方向标注买量合规性、海外盘大小、SLG 改造空间三个维度，按 S+/S/A+/A/B+/B/D 打档。
+3. **商业化层（Monetization Tier）** — 第二页签「商业化适配」统一按 16 个商业化养成原型维护：COK-like / ROK-like / WOS-like / Kingshot-like / Last Asylum-like / 疯狂水世界-like / Top War-like / Top Heroes-like / Last War-like / Puzzle 4X-like / Evony-like / Mafia-like / Lords Mobile-like / Dragon-Beast-like / Ecology-like / IP Season-like。补全样本不再单独维护大卡，必须统一下沉到「16 个原型机制快扫」、`.model-card-grid` 和「9 个题材 × 16 原型适配卡」，字段覆盖准入/演进、策略/消耗、重养成/重心感、玩家锚点、赛季窗口、门槛原因、主入口/后端承接和题材关键词。D 毒枭在商业化适配里按 Mafia-like 黑帮买量高 CPI 风险处理。
+4. **SLG 立项判断层（Quality Tier）** — 第三页签「SLG 立项判断」回答“外部 SLG 产品出现时如何判断它是否值得立项”。统一使用重度 SLG / 轻量化 SLG 口径，把轻量化拆成极轻量、中度轻量、复合玩法轻量化、包装层面轻量化四种颗粒度，并把 16 个商业化养成原型归入代表样本：COK/ROK 作为重度参照；Last War/Last Z 归极轻量；WOS/Last Asylum/Top Heroes 归中度轻量；Kingshot/Puzzle 4X/疯狂水世界/Top War 归复合玩法轻量化；Evony/Mafia/Lords Mobile/Dragon-Beast/Ecology/IP Season 归包装层面轻量化。v4.24 起新增立项倾向排序：复合玩法轻量化优先，中度轻量第二，极轻量做入口验证，包装层面轻量化谨慎/条件立项。v4.26 起新增同口径回测表，用验证状态标签明确区分“市场验证”和“立项假设”；v4.29 起市场验证样本为 6 个，Top War 与 Top Heroes 必须拆分评分。v4.28 起评分体系改为 8 维 100 分，新增“入口人群与后端压力匹配”，避免 D0 强 Hook 掩盖 D7-D30 转化错配。最终仍用评分表、硬门槛和外部公开报告证据支撑判断。
+5. **后端轻重度判定层（Route Boundary Tier）** — 第四页签「后端轻重度判定」保留 Q1 / Q2 / Q3 判定工具，但明确判定范围是 D7-D30 之后的后端入口：养成对象、付费核心、商业化深水层、联盟赛季、多人关系绑定度、主城/行军/飞地规则；不是在判断前 10 分钟教程或广告入口轻不轻。
+6. **内部评审闭环层（Internal Review Tier）** — 第五页签「内部评审闭环」只指 PPT Master 已进入内部上会材料的方向提案，记录 2026-04 首轮评委会如何打分、列 P0、推动 design_spec 与 PPT 修订；它不是行业通用标准，也不是前面 9 个题材的全部结论。
+7. **评审沉淀与自检层（Principle / Checklist Tier）** — 第六页签「评审沉淀原则」是从内部评审闭环的 19 条修订抽象出的 10 条设计原则；第七页签「P0 立项自检」再把原则映射为 23 项门禁，用于下一次立项前自查。
+8. **洞察层（Insight Tier）** — 6 条跨原型的通用结论（如"拆包是跨文化通用爽点"、"日本 Steam 几乎不存在必须走 App Store"、"买量成本决定模型而不是题材好坏"），指导后续新方向立项时的思考框架。
+9. **内部合作纪要层（Partner Memo Tier）** — 第八页签「内部合作纪要」只服务 2026-05-07 与 MOMO / 沐睦的外部孵化定制合作推进。它把会议纪要和 Mumugames BP 合并成决策页：哪些方向首批推进、哪些只做小额验证、哪些暂缓或低优先，以及 MVP / D7 / S1 的合作门槛。它不替代前面 9 个题材的公开数据、商业化矩阵和立项判断分数。
+
+**顶部核心七页签固定阅读顺序**：原型数据 → 商业化适配 → SLG 立项判断 → 后端轻重度判定 → 内部评审闭环 → 评审沉淀原则 → P0 立项自检。第八页签「内部合作纪要」追加在最后，作为内部合作推进材料，不改变前七个页签的阅读语义。
 
 ---
 
@@ -59,15 +67,16 @@
 | Beholder（→ B 极权公寓） | 475550 | 评论 30,255 · 俄语 38.8% > 英语 13.4% · 土耳其 1,337 条 | Alawar 发行商俄语区数据 |
 | Empire of Sin（→ G 失败案例） | 604540 | 峰值 7,728 → 当前 ~70 · 评论 6,218 · 好评 48% | Steam Charts 跌幅 + Paradox 论坛停更 |
 | Undisputed（→ C 地下拳馆） | 1451190 | 评论 21,961 · 好评 60% · 英语 84.3%（13,528 条） | 与 UFC 5 / Fight Night 对标 |
+| Quarantine Zone: The Last Check（→ J 防疫区 / 检疫哨站） | 3419520 | 评论 11,618 · 好评 92% · 英语 4,995 条 · 俄语 1,905 条 · 简中 580 条 | Steam 官方页 + Steam 评论语言过滤器 |
 | To The Rescue!（→ I 动物联盟） | 946720 | 评论 2,123 · 好评 67% · 售价 $9.99 · 20% 捐 PetFinder | 同期 Cat Cafe Manager 参照 |
 
 ### 2.3 非 Steam 数据源（关键参考 IP / 题材 / 合规）
 
 | 来源类型 | 用途 | 具体引用 |
 |---|---|---|
-| HBO / Netflix 剧集 | 题材情感锚点 | 《大西洋帝国 Boardwalk Empire》（禁酒令） · 《Peaky Blinders》（英式黑帮） · 《Narcos》（毒枭，题材可参考但禁买量） · 《Zootopia》（动物叙事） |
+| HBO / Netflix 剧集 | 题材情感锚点 | 《大西洋帝国 Boardwalk Empire》（禁酒令） · 《Peaky Blinders》（英式黑帮） · 《Narcos》（毒枭，题材可参考但黑帮买量 CPI 高） · 《Zootopia》（动物叙事） |
 | 电视真人秀 / YouTube | 爽点血缘 | A&E《Storage Wars》13 季（仓储拍卖） · MrBeast 港口开箱（YouTube 单集 1-3 亿播放） |
-| 广告合规政策 | 方向 D 封杀依据 | Meta Audience Network Policy · Google Ads Recreational Drugs Policy · AppLovin illegal-illicit-products · Unity Ads content policy |
+| 广告政策 / 买量边界 | 高风险题材的素材边界与成本判断 | Meta Audience Network Policy · Google Ads Recreational Drugs Policy · AppLovin illegal-illicit-products · Unity Ads content policy；D 毒枭商业化页当前按黑帮买量高 CPI 风险处理 |
 | Apple 官方奖项 | DREDGE 移动端背书 | 2025 Apple Design Award · App Store 2025 iPad Game of the Year |
 
 ---
@@ -76,7 +85,7 @@
 
 网站不是凭空写出来的，而是经过三轮迭代。记录这条决策链，是为了让后续任何人加新原型、新方向时，能沿用同一套筛选逻辑。
 
-### 3.0 最初的分析框架（Why these 8 prototypes? Why these 8 directions?）
+### 3.0 最初的分析框架（Why these 9 prototypes? Why these 9 directions?）
 
 这一节专门回答"你最开始是基于什么分析的"。后续要新加方向 / 新加原型时，照这个框架走一遍即可。
 
@@ -92,7 +101,7 @@
 | **SLG 改造空间大** | 原作不能已经是重度 TBS/4X（那就没得改了） | 原作玩法重心≤单人经营 / 线性叙事 / 放置等轻度骨架 |
 | **轻度题材** | 与 MPH 骨架能拼得上，不能是 AAA 剧情大作 | 原型售价 ≤ $25 或是 F2P，开发体量 1-3 年独立/中型工作室 |
 
-#### 3.0.2 原型候选池（怎么选出这 8 款的）
+#### 3.0.2 原型候选池（怎么选出这 9 款的）
 
 从 Steam 2023-2026 年"经营模拟 + 叙事模拟 + 放置模拟"品类里筛出 30+ 款候选，依据以下 5 个信号**逐层漏下**来：
 
@@ -101,12 +110,12 @@
 | **L1 热度** | 峰值在线 ≥ 3,000 或 总评论 ≥ 2,000 | 热度过低证明题材天花板太矮，SLG 规模化没意义 |
 | **L2 可迁移** | 原作是单人骨架 / 没有 PVP / 没有联盟 | 原作越"单薄"，SLG 改造空间越大 |
 | **L3 跨文化** | 有至少 1 种非英语评论 ≥ 原作总评的 2%；或有电视剧/YouTube/电影 IP 跨文化背书 | 否则海外盘窄 |
-| **L4 合规预筛** | 不是赌博 / 毒品 / 色情 / 极端暴力直出 | 否则 Meta/Google/Apple 一票否决，SLG 买量模型不成立 |
+| **L4 买量边界预筛** | 不直出赌博 / 毒品 / 色情 / 极端暴力；若走黑帮/犯罪素材，必须估高 CPI 和创意疲劳 | 否则 SLG 买量模型可能因成本过高而不成立 |
 | **L5 数据可验证** | Steam 评论页能拉到真实语言过滤数据 | 这是本网站的立身之本，不可验证不收录 |
 
-**最终过漏斗的 8 个原型**（连同漏掉的典型反例）：
+**最终过漏斗的 9 个原型**（连同漏掉的典型反例）：
 
-| 过漏斗 8 款 | 为什么过 | 漏掉的典型反例 | 为什么漏 |
+| 过漏斗 9 款 | 为什么过 | 漏掉的典型反例 | 为什么漏 |
 |---|---|---|---|
 | Schedule I | L1 爆款级 · L2 单人骨架 · L3 全球通吃 | Schedule I 原味手游 | L4 毒品触合规（走方向 G 的"题材蒸馏"版本进） |
 | TCG Card Shop Simulator | L1-L5 全过 · 东亚占比最高 | Hearthstone / MTG | L2 已是重度 TBS，改造空间 < 3 星 |
@@ -115,32 +124,34 @@
 | Beholder | L1 过 · 题材独特 | Papers Please | L3 俄语极度偏斜，反向验证"区域化陷阱" |
 | Empire of Sin | 反面教材（重度 TBS 的翻车案例） | 直接剔除 | L2 重度 TBS · L1 从 7,728 跌到 70 = 最好"别这么做"范本 |
 | Undisputed | L1 刚过门槛 · 验证垂直题材 | UFC 5 | L2 AAA 不可对标 |
+| Quarantine Zone: The Last Check | L1 过门槛 · L2 双阶段轻量骨架 · L3 英俄双市场 · L4 可软化 | 纯僵尸塔防 | 只保留夜晚战斗会丢掉"白天识别伪人"的差异化钩子 |
 | To The Rescue! | L1 勉强过 · 公益题材独家 | Animal Shelter | 实际 Animal Shelter 也过了漏斗，To The Rescue 承担"善意变现案例"角色，两者在方向 I 分析里都有引用 |
 
 > **关键选择逻辑**：Empire of Sin 不是候选而是"反面教材"，专门用来证明"重度 TBS × 题材好感度 ≠ 成功"——这个反例对方向 G/D 的讨论很关键，不能删。
 
 #### 3.0.3 原型 → 方向的映射逻辑
 
-8 个方向 A-I 不是凭空列出来的，每个方向都来自"某个原型的某个子爽点 + MPH 骨架 + 某个跨文化 IP 情感"三合一推演。映射关系如下：
+9 个方向 A-J 不是凭空列出来的，每个方向都来自"某个原型的某个子爽点 + MPH 骨架 + 某个跨文化 IP 情感"三合一推演。映射关系如下：
 
 | 方向 | 核心爽点来源 | 情感 IP 来源 | 经营骨架 | 为什么合并到一起 |
 |---|---|---|---|---|
 | **A 港口开箱** | Storage Hunter Simulator 的"拆箱爽点" + MrBeast 港口开箱视频级爽感 | A&E《Storage Wars》13 季 | MPH | 拆包是跨文化通用爽点 + 港口叙事比家庭仓储更具 SLG 扩张性（多港争夺） |
 | **B 极权公寓** | Beholder 的"窥视 + 抉择" | 《1984》《黑镜》 | MPH | 俄语基本盘证明独特题材能活，适合小众做区域化 |
 | **C 地下拳馆** | Undisputed 的"垂直品类 + 上升故事" | Rocky / Fight Club | MPH | 垂直品类 + 上升故事结构极好承载 SLG |
-| **D 毒枭原味** | Schedule I 的"生产-分销-体验"闭环 | Breaking Bad / Narcos | MPH | 爽点最强但合规死路，作为"反面对照"留住 |
+| **D 毒枭原味** | Schedule I 的"生产-分销-体验"闭环 | Breaking Bad / Narcos | MPH | 爽点最强但黑帮买量 CPI 高，作为高成本对照留住 |
 | **E TCG 卡店帝国** | TCG Card Shop 的"开包 + 集换 + 市场博弈" | 游戏王 / 宝可梦 / MTG 20 年文化积累 | MPH | 开包爽点与"经营店主"视角天然绕开 lootbox 法律风险 |
-| **G 禁酒令私酒帝国** | Schedule I 骨架（蒸馏） | HBO《大西洋帝国》+ Peaky Blinders | MPH | 把 D 的爽感移到合规题材，是 D 的合规替代解 |
+| **G 禁酒令私酒帝国** | Schedule I 骨架（蒸馏） | HBO《大西洋帝国》+ Peaky Blinders | MPH | 把 D 的爽感移到更低 CPI、更宽受众的题材，是 D 的低成本替代解 |
 | **H 深海守望者** | DREDGE 的"日常出海 + 恐怖节律" | 克苏鲁 / 灯塔 / Lovecraftian | MPH | DREDGE+ 移动端验证成功，SLG 层完全空白 |
 | **I 动物联盟** | To The Rescue / Animal Shelter | Zootopia / Stray | MPH | 纯善 + 偷救叛逆=情感+策略+叛逆三重钩 |
+| **J 防疫区 / 检疫哨站** | Quarantine Zone 的"白天识别伪人 + 夜晚高空火力防御" | Papers Please / 末日边境 / 僵尸检疫区 | MPH + 轻塔防 | 白天检查给短局判断，夜晚尸潮给战斗反馈，后端能扩成隔离区 / 防线 / 联盟哨站 |
 
 > **为什么没有方向 F**：F 在早期稿是"殖民地管理"（Frostpunk 灵感），L4 合规 + L2 骨架重，被剔除到"候选池备忘"里，但编号保留跳过，防止后面重排 ID 把所有文档索引搞乱。
 
-#### 3.0.4 为什么只有 8 个方向，不是 5 或 15？
+#### 3.0.4 为什么目前是 9 个方向，不是 5 或 15？
 
 - **下限**：少于 5 个方向 = "可选面太窄，高管会怀疑分析深度"。
 - **上限**：超过 10 个方向 = "没法聚焦，且每个方向的数据支撑都薄"。
-- **实际收敛**：8 个方向正好覆盖"S+/S/A+/A/B+/B/D"七档（C 档空缺，是故意留出的"下次迭代可补位"空间）。
+- **实际收敛**：当前 9 个方向覆盖"S+/S/A+/A/B+/B/D"七档；J 是 2026-04-29 新增观察方向，先以 A 级方向池进入，等独立 PPT + Game Review 后再决定是否升到 A+ 或降回 B+。
 
 ### 3.1 v1 · 幻觉版（已淘汰）
 
@@ -158,10 +169,10 @@
 ### 3.3 v3 · 真实数据版（2026-04-16，上一次稳定版）
 
 **核心修正**：
-1. 全部 8 个原型重新拉 Steam 评论页的语言过滤器，记录真实计数。
+1. 全部 9 个 Steam 原型重新拉 Steam 评论页的语言过滤器，记录真实计数。
 2. 把"DREDGE 日语 12%"更正为 "0.53%（282/53246）"，并据此重写方向 H 的「打日本一定要走 App Store 不能看 Steam」结论。
 3. 对于评论过少（如 To The Rescue 只有 2,123 条）导致语言分布不可得的原型，明示 `unknown` 而非编数字。
-4. 对于方向 D（毒枭原味）做**致命级合规判决**：用 Meta / Google / AppLovin 的官方政策条款直接否决，而不是模糊写"可能有风险"。
+4. 对于方向 D（毒枭原味）做**高 CPI 买量判决**：可走 Mafia-like 黑帮买量，但必须补高 / 中 / 低 CPI 情景表和小额素材测试，不能模糊写"可能有风险"。
 
 ### 3.4 v4 · 立项评审同步版（2026-04-20，本次更新）
 
@@ -182,7 +193,7 @@
 
 | 维度 | 打分原则 |
 |---|---|
-| **买量合规** | 完美（所有主渠道可投）= 满分；需区域裁剪 = 中等；Meta/Google 明确禁投 = 致命降级（方向 D 即因此从 S 级直接落到 D） |
+| **买量成本 / 素材边界** | 中性题材、所有主渠道可投且素材池大 = 满分；需区域裁剪或素材受限 = 中等；黑帮/犯罪素材 CPI 高且创意池窄 = 高风险降级（方向 D 按此处理） |
 | **海外盘大小** | 英语区评论 ≥ 10 万 + 多语言分布均衡 = 5 星；只在某一语种强势（如 Beholder 只俄语 38%）= 2-3 星 |
 | **SLG 改造空间** | 原作已有的是单人经营骨架，且未做 PVP / 联盟 / 多城扩张 = 5 星；原作已经是重度 TBS/SLG = 3 星以下 |
 
@@ -206,9 +217,10 @@
 | **E TCG 卡店帝国** | ⭐⭐⭐⭐（店主视角规避 lootbox 主要风险，沙特仍需改名规避斋月） | ⭐⭐⭐⭐（英语区 + 东亚 10% 是所有原型最高，但基本盘绝对值不如 A/G） | ⭐⭐⭐⭐⭐（原作纯单店闭环，多店连锁/城市竞争/工会 PVP 全空白） | **A+** | 买量/海外盘各 4 星，SLG 改造满星，三维合计 = A+ |
 | **H 深海守望者** | ⭐⭐⭐⭐（克苏鲁氛围 Meta/Google 可投，国内版号需叙事本地化） | ⭐⭐⭐⭐（DREDGE 全球均匀渗透，日本走 App Store 强势） | ⭐⭐⭐⭐⭐（DREDGE 是单机叙事 RPG，多港/联盟/深海争夺全空白） | **A+** | 买量 + 海外盘各降 0.5 星（国内本地化工作量 + DREDGE IP 识别度 5% 而非 Pokémon 70%） |
 | **I 动物联盟** | ⭐⭐⭐⭐（公益叙事全合规，WWF 合作真捐绑定） | ⭐⭐⭐⭐（欧美 + 港澳台 + 东南亚全覆盖，女性玩家加分） | ⭐⭐⭐⭐（从"纯救助"加"偷救叛逆"后 SLG 空间打开，但仍弱于 E/H） | **A** | 三维都是 4，但缺乏"必杀亮点"没法冲 A+ |
+| **J 防疫区 / 检疫哨站** | ⭐⭐⭐⭐（检疫/边境安全可投，僵尸感染和伪人恐怖素材需软化） | ⭐⭐⭐⭐（Quarantine Zone 11,618 评论、英语 4,995、俄语 1,905，盘不如 A/G 但已过原型门槛） | ⭐⭐⭐⭐⭐（白天筛查、夜晚防线、隔离区扩建、联盟哨站全空白） | **A** | SLG 改造满星，但海外盘绝对量仍小于 A+/S 档，先放 A 级新增方向 |
 | **C 地下拳馆** | ⭐⭐⭐（暴力内容需软化 TikTok 可投 / Meta 限投） | ⭐⭐⭐⭐（英语区 Undisputed 13K 条证明有盘，但 60% 好评说明硬核路线风险） | ⭐⭐⭐⭐（拳馆经营+签约+出赛 SLG 化空间 OK） | **B+** | 暴力合规拉到 3 星触发降档 |
 | **B 极权公寓** | ⭐⭐⭐⭐（Beholder 主题西方可投，国内严管） | ⭐⭐（俄语 38.8% > 英语 13.4%，彻底区域化陷阱） | ⭐⭐⭐⭐（Beholder 是单人抉择游戏，SLG 空间大） | **B** | 海外盘只有俄语区，打不了欧美日韩，两维 3 星以下 |
-| **D 毒枭原味** | ⭐（Meta/Google/AppLovin/Unity Ads 四大渠道全部禁投 + iOS/Google Play 100% 拒审） | ⭐⭐⭐⭐⭐（Schedule I 45.9 万峰值是数据最强的原型） | ⭐⭐⭐⭐⭐（Schedule I 骨架可迁移） | **D** | 海外盘+SLG空间都是 S 级，但合规一票否决直接拉到最低档 |
+| **D 毒枭原味** | ⭐⭐（可走 Mafia-like 黑帮买量，但 CPI 高、素材竞争强，需要小额素材测试确认） | ⭐⭐⭐⭐⭐（Schedule I 45.9 万峰值是数据最强的原型） | ⭐⭐⭐⭐⭐（Schedule I 骨架可迁移） | **D** | 海外盘+SLG空间都是 S 级，但买量成本与素材扩量风险会直接拉低商业化可行性 |
 
 > **维护要点**：这张 scorecard 的三维分数**来源必须写在网站上的"为什么降级/为什么升档"句子里**，不是内部黑箱。否则下次评审或老板问"为什么是 A+ 不是 A"时没依据。
 
@@ -218,8 +230,8 @@
 
 | 硬边界 | 触发条件 | 自动降档到 |
 |---|---|---|
-| **主渠道禁投** | Meta / Google Ads / AppLovin / Unity Ads 中任何 2 家政策全面禁投 | 直接 D 档（方向 D 的依据） |
-| **iOS/Android 100% 拒审** | Apple App Review Guideline 或 Google Play Content Policy 有明确对标禁止条款 | 直接 D 档（方向 D 的依据） |
+| **主渠道禁投** | Meta / Google Ads / AppLovin / Unity Ads 中任何 2 家政策全面禁投 | 直接 D 档；D 毒枭商业化适配页当前不按此条处理，而按 Mafia-like 高 CPI 买量处理 |
+| **iOS/Android 100% 拒审** | Apple App Review Guideline 或 Google Play Content Policy 有明确对标禁止条款 | 直接 D 档；如果业务侧确认可用黑帮买量包装，则必须另建高 CPI 情景表 |
 | **区域完全偏斜** | 英语区评论 < 20% 或 某一非英语语种 > 30%（Beholder 俄语 38.8%） | 至少降到 B 档 |
 | **原作已是重度 SLG/TBS** | 原作已有联盟/PVP/多城扩张 | SLG 改造维降到 ≤3，连带整体档位降 |
 | **IP 识别度过低** | Newzoo / Google Trends 上原 IP 识别度 < 10%（DREDGE 5%） | CPI 溢价 30%-50%，档位降 0.5（H 从"应该 S 级"降到"A+"） |
@@ -237,7 +249,7 @@
 3. 玩法-时间节点
 4. 玩法-阶段过渡
 5. 商业化-付费/留存
-6. 风险-题材/合规
+6. 风险-题材/买量边界
 7. 美术/配色/素材
 
 **重算规则**：
@@ -273,13 +285,19 @@
 | 序号 | 区块名 | 信息需求（UX 目的） | 维护时要改的地方 |
 |---|---|---|---|
 | H1 | 标题 + disclaimer bar | 第一眼告诉读者"这是真实数据不是拍脑袋" | `<h1>` + `.data-disclaimer` 文案 |
-| S1 | 顶部 summary-bar（4 张统计卡） | 3 秒内传达：8 款原型 / 44.5 万评论 / 峰值 45.9 万 / 5 推荐 2 谨慎 1 不推荐 | `.summary-bar .stat-card .value` 数字 |
+| S1 | 顶部 summary-bar（4 张统计卡） | 3 秒内传达：9 款原型 / 45.8 万评论 / 峰值 45.9 万 / 8 过 1 否 + J 已完成评审与 Slides | `.summary-bar .stat-card .value` 数字 |
 | S2 | legend-bar 图例 | 说明颜色语义（绿推荐 / 黄谨慎 / 红不推荐），对应 UI 原则"渐进式展示 + 反馈引导" | `.legend-bar` |
-| **§一** | 8 款原型卡片 + 饼图 | 每款给出元数据 + Steam 语言分布 + 核心洞察 + 交叉验证链接 | 每张 `.proto-card`；对应 Chart.js `new Chart(...)` 初始化数据 |
-| **§二** | 地区汇总大饼图 | 把 8 款原型的语言数据聚合，给出"英语永远是主盘"的总体结论 | `overall` JS 对象 + `.proto-card` 下的 `.proto-analysis ul` |
-| **§三** | 方向总览表格 + 8 个方向详细卡片 | 决策用：按档位给出每个方向的"参考原型 / 合规 / 海外盘 / SLG 空间" | `<table>` 行；`.direction-block` 块；v4 起新增「立项评审」列 |
-| **§四** | 立项评审进展（v4 新增） | 把 PPT 评审结果同步到原型分析页，形成 "Research → Proposal → Review" 全链路可见 | 新章节，维护时同步内部评审汇总 |
-| 结尾 | 核心洞察 6 条 + 数据来源 + footer | 沉淀复用到新方向立项 | `.insight-card ul`；`.data-source-box .cite-list` |
+| **§一** | 9 款原型卡片 + 饼图 | 每款给出元数据 + Steam 语言分布 + 核心洞察 + 交叉验证链接 | 每张 `.proto-card`；对应 Chart.js `new Chart(...)` 初始化数据 |
+| **§二** | 地区汇总大饼图 | 把 9 款原型的语言数据聚合，给出"英语永远是主盘"的总体结论 | `overall` JS 对象 + `.proto-card` 下的 `.proto-analysis ul` |
+| **§三** | 方向总览表格 + 9 个方向详细卡片 | 决策用：按档位给出每个方向的"参考原型 / 合规 / 海外盘 / SLG 空间" | `<table>` 行；`.direction-block` 块；v4 起新增「立项评审」列 |
+| Tab 2 | 商业化适配（16 原型 × 9 题材） | 当前只维护 16 个商业化养成原型；补全样本不再单独维护「补全原型」大卡，必须同时出现在「16 个原型机制快扫」矩阵、`.model-card-grid` 机制卡和「9 个题材 × 16 原型适配卡」中，拆清准入/演进、策略/消耗、重养成/重心感、玩家锚点、赛季窗口、门槛原因、主入口/后端承接和题材关键词；D 毒枭按 Mafia-like 黑帮买量高 CPI 风险处理 | `<section data-tab="monetization">`；`.coverage-grid`；`.evolution-strip`；`.report-link-box`；`.evidence-legend`；`.evidence-grid`；`.threshold-guide`；`.model-matrix`；`.model-card-grid`；`.direction-fit-grid`；`website/assets/game-icons/`；`website/assets/direction-icons/`；`website/reports/`；JS `VALID` 白名单 |
+| Tab 3 | SLG 立项判断（v4.29 拆分 Top War / Top Heroes） | 用外部公开报告和广告政策证据，建立“外部 SLG 产品是否优质、是否值得立项”的判断体系；统一使用重度 SLG / 轻量化 SLG 口径，拆分极轻量、中度轻量、复合玩法轻量化、包装层面轻量化四类颗粒度，并维护 16 个商业化养成原型的代表样本归类、立项倾向排序、8 维评分表、同口径回测表、硬门槛和快判流程。v4.29 起同口径回测把 Top War 与 Top Heroes 拆成两个市场验证样本；v4.28 新增“入口人群与后端压力匹配”维度，专门判断前端吸入用户是否能转到生存压力、战争压力或数值验证场景；“已跑通 / 市场验证”和“未跑通 / 立项题材”两类标签必须继续保留 | `<section data-tab="quality">`；`.quality-hero`；`.quality-ladder`；`.quality-priority-wrap`；`.quality-priority-table`；`.quality-example-row`；`.quality-example-pill`；`.quality-score-table`；`.validation-compare-wrap`；`.validation-score-table`；`.status-badge`；`.quality-gate-grid`；`.quality-process-grid`；`.source-links`；JS `VALID` 白名单 |
+| Tab 4 | 后端轻重度判定（v4.23 改名收窄口径） | 用 Q1 主城可被攻打 / Q2 全天候行军掠夺 / Q3 付费核心，区分重度后端轻入口、角色/卡牌/经营驱动轻后端、接地飞地或限时节点战；判定范围主要是 D7-D30 之后的养成、付费、商业化、联盟赛季、多人关系绑定度和飞城/飞地规则，不把前期教程或广告入口误判为整体轻重度。所有游戏机制必须标来源等级，Top Heroes 强制飞离、Last War 主城燃烧、指尖无双宣战窗口等未双源确认项必须保留待实机核验 | `<section data-tab="bc-framework">`；`.bc-route-grid`；`.bc-test-grid`；`.monetization-table-wrap`；`.bc-assess-grid`；`.source-links`；JS `VALID` 白名单 |
+| Tab 5 | 内部评审闭环 | 把 PPT Master 已进入内部上会材料的方向提案评审结果同步到原型分析页，形成 "Research → Proposal → Review → Revision" 链路；必须写清评审主体、P0 来源和修订范围，避免读者误解为行业通用标准 | `<section data-tab="loop">`；`.review-board-wrap`；`.summary-table-wrap`；`.verdict-grid`；`.dim-matrix-wrap`；`.common-issues-table` |
+| Tab 6 | 评审沉淀原则 | 从内部评审闭环的 19 条修订抽象 10 条可复用设计原则；它是 Tab 5 的下游沉淀，不是与 Tab 5 并列的一套新评审 | `<section data-tab="principles">`；`.principles-intro`；`.principles-grid`；`.principle-card` |
+| Tab 7 | P0 立项自检 | 把 10 条原则映射为 23 项交互式门禁，供下一次立项前逐项自查 | `<section data-tab="checklist">`；`.checklist-header`；`.checklist-dashboard`；`.check-list` |
+| Tab 8 | 内部合作纪要（v4.27 新增） | 将 2026-05-07 MOMO / 沐睦会议纪要与 Mumugames BP 可视化为内部合作推进页：三层判断框架、9 个题材会后优先级、推进 / 验证 / 观察 / 低优先原因、MVP-D7-S1 门槛、沐睦能力与待确认项。此页不能反向覆盖前面 9 题材公开数据、16 原型商业化矩阵和同口径立项分数，除非后续市场测试产生新证据 | `<section data-tab="partner-memo">`；`.partner-hero`；`.partner-kpi-grid`；`.partner-framework`；`.partner-decision-grid`；`.partner-table-wrap`；`.partner-roadmap`；`.partner-company-grid`；JS `VALID` 白名单 |
+| 结尾 | 首页核心洞察 + 数据来源 + footer | “核心洞察 · 数据告诉我们的 6 件事”只在原型数据页签显示，避免商业化、立项判断、后端轻重度、评审闭环等页签重复露出总数据洞察；数据来源与版本记录仍作为全站底部信息保留 | `.insight-card.home-only-block[data-home-only="home"]`；JS `homeOnlyBlocks`；`.data-source-box .cite-list` |
 
 ---
 
@@ -287,26 +305,61 @@
 
 网站讲的是"原型 → 方向"的判断；PPT Master 工程则是"方向 → 立项 PPT → 评委会评审"的落地。两边必须互相对齐。
 
-**v4.2 列顺序按 7 维均分排名 A > G > I > E > H > D**。
+**v4.29 说明**：`SLG 立项判断` 页签的同口径回测不再把 Top War 与 Top Heroes 合并。Top War 评分保持 77.0，原因是冰封救援/军武合成入口虽然偏休闲，但合成对象直接指向士兵、基地、战力与联盟战；Top Heroes 单列为 73.5，原因是红龙/RPG 式竖屏单手入口更偏英雄探索和角色养成，能承接队伍数值验证，但和硬地图战争之间仍有一层转化。新总分见 `outputs/evaluation-validation/stage2_scores_v2/summary_scores_v2.md`。
 
-| 网站方向 | 对应 PPT 工程目录 / 链接 | 7 维均分 | 旧 9 维 | 评审裁决 | P0 待改数 |
+**v4.28 说明**：`SLG 立项判断` 页签把原 7 维 100 分升级为 8 维 100 分，新增第 3 维 `入口人群与后端压力匹配`，权重 15 分。这个维度专门解决“前期玩法题材吸入的人群，是否愿意转向后期生存压力 / 战争压力 / 数值验证场景”的问题。港口开箱、TCG 卡店、动物联盟这类 RNG / 收集 / 照护入口会在此项被单独扣分；Kingshot、防疫区、WOS 这类一开始就让玩家接受防守、威胁或生存压力的方向则更稳。新权重见 `outputs/evaluation-validation/SCORING_RUBRIC_V2.md`，新总分见 `outputs/evaluation-validation/stage2_scores_v2/summary_scores_v2.md`。
+
+**v4.27 说明**：`内部合作纪要` 页签的数据来源为用户提供的本地 PDF：`/Users/ahs/Downloads/智能纪要：SLG游戏产品方案讨论 2026年5月7日.pdf` 与 `/Users/ahs/Library/Containers/com.tencent.xinWeChat/Data/Documents/xwechat_files/dingliang__581c/msg/file/2026-04/沐睦网络Mumugames BP.pdf`。该页只记录会后内部合作优先级：G 禁酒令、J 防疫区为首批推进；E 卡牌、B 酒店、H 深海做小预算验证；C 拳馆、D 毒枭原味暂缓观察；A 港口开箱、I 动物联盟当前低优先。后续若买量或留存测试产生反证，应先更新该页的会后优先级，再评估是否同步回核心方向档位。
+
+| 对象 | 分数 | 状态 |
+|---|---:|---|
+| Whiteout Survival / 寒霜启示录 | 84.0 | 已跑通 / 市场验证 |
+| Kingshot | 78.5 | 已跑通 / 市场验证 |
+| Top War | 77.0 | 已跑通 / 市场验证 |
+| 疯狂水世界 | 76.0 | 已跑通 / 市场验证 |
+| 方向 J：防疫区 / 检疫哨站 | 75.5 | 未跑通 / 立项题材 |
+| 方向 G：禁酒令私酒帝国 | 75.0 | 未跑通 / 立项题材 |
+| Top Heroes | 73.5 | 已跑通 / 市场验证 |
+| 方向 C：地下拳馆 | 71.5 | 未跑通 / 立项题材 |
+| Last Asylum: Plague / 乌鸦医生 | 71.5 | 已跑通 / 市场验证 |
+| 方向 A：港口开箱 | 70.0 | 未跑通 / 立项题材 |
+| 方向 B：大陆酒店经营 | 69.5 | 未跑通 / 立项题材 |
+| 方向 E：TCG 卡店帝国 | 68.5 | 未跑通 / 立项题材 |
+| 方向 H：深海守望者 | 68.0 | 未跑通 / 立项题材 |
+| 方向 I：动物联盟 | 65.5 | 未跑通 / 立项题材 |
+| 方向 D：Nightking 毒枭原味 | 49.0 | 未跑通 / 高 CPI 重构 |
+
+**v4.26 说明**：`SLG 立项判断` 页签新增“同口径分数回测：已跑通产品 vs 站内九方向”。维护时必须保留两类状态标签：绿色 `已跑通 / 市场验证` 用于市场产品，琥珀色斜体 `未跑通 / 立项题材` 用于 9 个站内方向，D Nightking 使用红色 `未跑通 / 高 CPI 重构`。这张表的核心目的是防止读者把“已验证产品回测分”和“未验证题材假设分”误读成同一性质；v4.29 起市场产品行数为 6，因为 Top War 和 Top Heroes 已拆分。
+
+**v4.25 说明**：底部“核心洞察 · 数据告诉我们的 6 件事”不再作为全站通用尾部内容，而是通过 `.home-only-block[data-home-only="home"]` 和 Tab 切换脚本中的 `homeOnlyBlocks` 控制，只在“原型数据”页签显示。后续新增类似总览型洞察时，必须先判断它属于某个具体页签还是全站底部信息；不要默认放在所有 tab panel 之外。
+
+**v4.24 说明**：SLG 立项判断页新增「立项倾向：不是四类平权」。维护时必须保留这条结论：第一优先复合玩法轻量化，第二优先中度轻量，极轻量用于入口验证而不是完整 SLG 方案，包装层面轻量化必须按重度项目估预算、团队、运营、战损和联盟组织成本。该模块的来源需保留 Google Play 4X Strategy report、AppMagic Mobile Market Landscape 2026、Naavik Century / Kingshot 分析以及 Kingshot 周年表现/点点数据引用；新增来源时必须优先放在 `.source-links`。
+
+**v4.23 说明**：页面顶部导航改成明确的从左到右阅读链路：原型数据 → 商业化适配 → SLG 立项判断 → 后端轻重度判定 → 内部评审闭环 → 评审沉淀原则 → P0 立项自检。“轻重度判定”改为“后端轻重度判定”，维护时必须把范围写清：这里主要判断 D7-D30 之后的养成、付费、商业化、联盟赛季、多人关系绑定度、主城/行军/飞地规则；不要把前 10 分钟教程、广告入口或首屏是否轻量，误写成整体项目轻重度。评审闭环必须明确为内部 PPT 方向提案评委会结果，10 条设计原则是该闭环的下游沉淀。
+
+**v4.22 说明**：页面在「优质判断体系」的轻量化颗粒度卡片中补入 16 个商业化养成原型的代表样本归类。COK-like / ROK-like 只作为重度 SLG 参照，不归入四类轻量化；Last War / Last Z-like 归极轻量入口；WOS-like / Last Asylum-like / Top Heroes-like 归中度轻量；Kingshot / Kingdom Guard-like、Puzzle 4X-like、疯狂水世界-like、Top War-like 归复合玩法轻量化；Evony-like、Mafia-like、Lords Mobile-like、Dragon / Beast-like、Ecology-like、IP / Faction Season-like 归包装层面轻量化。维护时必须按“主要降低门槛的手段”归主类；若一个产品有极轻入口但后端很重，需要在卡片备注中写清入口与后端的边界，不能把它误判为低预算项目。
+
+**v4.21 说明**：页面新增「优质判断体系」页签，用 Google Play 4X Strategy report、点点数据 2025 全球 SLG 报告、DataEye 2025 海外买量报告、XMP/Mobvista UA 趋势以及 Google/Meta/Unity/AppLovin 广告政策作为外部证据，建立“外部 SLG 产品是否值得立项”的 7 维 100 分判断表。商业化页当前口径仍是 16 个商业化养成原型；D 毒枭修正为“可走 Mafia-like 黑帮买量，但 CPI 高、素材竞争强、需要更高预算验证”。商业化页已删除补全原型重复大卡层，Last War / Puzzle 4X / Evony / Mafia / Lords Mobile / Dragon-Beast / Ecology / IP Season 统一下沉到 16 原型矩阵、机制卡和 9 题材适配卡；后续不再维护单独 `.gap-card`。方向 I 动物联盟云文档已在 2026-04-30 覆盖为 `I_动物联盟_动物庇护所+Zootopia情感叙事+My-Perfect-Hotel_20260421_000314.pptx`，沿用原 file_id `1NyFhmzUPGHLTeZWM3C_JsQiA8l7SqBEP`，所以网站链接不变。A/G/I/E/H/D 延续 2026-04-20 的 7 维均分排序；方向 B、方向 C 是 2026-04-28 新增汇报版，方向 J 是 2026-04-29 新增汇报版，三者评审 JSON 仍是 Game Review 9 维权重口径，所以表中统一写「评审分」，不要把方向 B/方向 C/方向 J 直接混入旧 7 维排名。J 已完成 PPT / Game Review / Google Slides 链路，网站方向总览与方向卡片均指向最新原生 Google Slides。新增「商业化养成适配」页签使用 1-5 适配分和定性商业化结构，不写未经验证的 CPI / LTV 数字；原型 app icon 统一来自官方 App Store / Google Play / 官网等可追溯来源，并落地到 `website/assets/game-icons/`。如果业务侧已经指定某个产品的识别图（例如 Top War-like / 口袋奇兵蓝盔士兵头像），以业务指定图为准，并在版本记录中写明；禁止后续自动抓取覆盖。方向缩略图统一从各 PPTX 的 slide 1 图片关系中提取 cover 主视觉素材，落地到 `website/assets/direction-icons/`，不得再把整页 PPT 预览当成题材缩略图。v4.21 起，轻重度判定框架中的 Q1/Q2/Q3 不能只引用内部资料：WOS、Last War、Top Heroes、疯狂水世界、指尖无双、这城有良田等样本必须至少列出外部来源；Top Heroes 强制飞离公会、Last War 主城燃烧/迁移、指尖无双 13:00-14:30 宣战窗口、疯狂水世界个人生产中心是否可被打等无法双源确认项，必须显式写“待实机核验”。v4.14 起，商业化页必须同时维护横纵分析报告源文件 `docs/SLG行业养成商业化原型横纵分析报告_SLG_MONETIZATION_PROTOTYPE_HV_REPORT.md` 与发布版 PDF `website/reports/SLG行业养成商业化原型横纵分析报告.pdf`；若新增、删除或调整行业补全样本，网页摘要、PDF 报告和本维护指南必须一起改。RUN 发布目录不得保留 `.bak`、临时截图、调试 HTML 或旧版本导出文件，避免外网暴露过期页面。v4.15 起，页面角标不能只写 A/B、A/C、B+、C+，必须写成用户可直接理解的“官方来源 / 二级来源 / 待核验来源 / 官方 + 二级 / 官方 + 待核验”，并在证据区保留 `.evidence-legend` 图例。v4.10 起，所有“兵种 / 克制 / 战损 / 赛季窗口 / 投放结论”必须带来源等级：A=官方帮助中心或商店页，B=产品 Wiki / 长期攻略站，C=社区经验 / 行业文章；证据不足统一写“未确认”，不得把推测写成事实。v4.11 起，门槛判断必须写清“为什么这个复杂度能不能服务 D0-D7 软验证与投放表达”，不能只贴“高中低”标签。
+
+| 网站方向 | 对应 PPT 工程目录 / 链接 | 评审分 | 旧 9 维 | 评审裁决 | P0 待改数 |
 |---|---|---|---|---|---|
 | S+ 方向 A 港口开箱 | [`ppt-master/projects/A_港口开箱_...`](https://docs.google.com/presentation/d/1TAKXJiJcD-EuYpHrij9HnDZSRET3OxmS/edit?usp=sharing&ouid=110387310515616113298&rtpof=true&sd=true) · 文档名 `A_港口开箱_v4_含评审优化` | **4.26** | 4.16 | ⚠️ CONDITIONAL PASS | 4 |
 | S 方向 G 禁酒令 | [`ppt-master/projects/G_禁酒令私酒帝国_...`](https://docs.google.com/presentation/d/1yzqprKv5d_heJeEEVsix4qnOjpc6jWov/edit?usp=sharing&ouid=110387310515616113298&rtpof=true&sd=true) | **4.17** | 4.09 | ⚠️ CONDITIONAL PASS | 5 |
-| A 方向 I 动物联盟 ⬆ | [`ppt-master/projects/I_动物联盟_...`](https://docs.google.com/presentation/d/1NyFhmzUPGHLTeZWM3C_JsQiA8l7SqBEP/edit?usp=sharing&ouid=110387310515616113298&rtpof=true&sd=true) | **3.94** | 3.89 | ⚠️ CONDITIONAL PASS | 5 |
+| A 方向 I 动物联盟 ⬆ | [`ppt-master/projects/I_动物联盟_...`](https://docs.google.com/presentation/d/1NyFhmzUPGHLTeZWM3C_JsQiA8l7SqBEP/edit?usp=sharing&ouid=110387310515616113298&rtpof=true&sd=true) · 文档名 `I_动物联盟_动物庇护所+Zootopia情感叙事+My-Perfect-Hotel_20260421_000314.pptx` · 2026-04-30 已覆盖原 file_id | **3.94** | 3.89 | ⚠️ CONDITIONAL PASS | 5 |
+| A 方向 J 防疫区 / 检疫哨站 | [`ppt-master/projects/J_防疫区_...`](https://docs.google.com/presentation/d/18ZNEqxgLdA9Wi7pjmSjGu1rcBYUpJL4SRee7TpIj3Xg/edit?usp=sharing) · 文档名 `J_防疫区_Quarantine-Zone+Papers-Please+Tower-Defense+My-Perfect-Hotel_20260429_192824` | **4.20** | — | ⚠️ CONDITIONAL PASS | 4 |
 | A+ 方向 E TCG 卡店 ⬇ | [`ppt-master/projects/E_TCG卡店帝国_...`](https://docs.google.com/presentation/d/1-zja9e5Ad8v6vztUYACPL-b0yFAgYa3v/edit?usp=sharing&ouid=110387310515616113298&rtpof=true&sd=true) | **3.91** | 4.05 | ⚠️ CONDITIONAL PASS | 5 |
 | A+ 方向 H 深海守望者 | [`ppt-master/projects/H_深海守望者_...`](https://docs.google.com/presentation/d/1wyVGT_4AHho2nLCSxKxdV1pX1w-gfes4/edit?usp=sharing&ouid=110387310515616113298&rtpof=true&sd=true) | **3.46** | 3.53 | ⚠️ CONDITIONAL PASS | 6 |
-| B+ 方向 C 地下拳馆 | *（暂未立项）* | — | — | — | — |
-| B 方向 B 极权公寓 | *（暂未立项）* | — | — | — | — |
-| **D 方向 D 毒枭原味** | [`ppt-master/projects/d_nightking_empire_...`](https://docs.google.com/presentation/d/1KzZhURtjFFSqMVJm5bS9W74G4z4TEV_M/edit?usp=sharing&ouid=110387310515616113298&rtpof=true&sd=true) · 文档名 `d_nightking_empire` | **2.69** | 2.78 | ❌ **REJECT** | 8（结构性否决） |
+| B+ 方向 C 地下拳馆 | [`ppt-master/projects/C_地下拳馆_...`](https://docs.google.com/presentation/d/12sI9NErQgFLqp97hsEZYD-qHlbQDzimyVdi9oeoSM8w/edit?usp=sharing) · 文档名 `C_地下拳馆_Undisputed+Rocky+Fight-Tycoon+My-Perfect-Hotel_20260428_142800` | **4.32** | — | ✅ PASS | 2 |
+| B 方向 B 大陆酒店 | [`ppt-master/projects/B_大陆酒店_...`](https://docs.google.com/presentation/d/1mGIqlni9nVlRl2w5sun3FW54X-pw63KLi-fSOiZ5zsA/edit?usp=sharing) · 文档名 `B_大陆酒店_John-Wick+Continental+My-Perfect-Hotel_20260428_145441` | **4.16** | — | ⚠️ CONDITIONAL PASS | 3 |
+| **D 方向 D 毒枭原味** | [`ppt-master/projects/d_nightking_empire_...`](https://docs.google.com/presentation/d/1KzZhURtjFFSqMVJm5bS9W74G4z4TEV_M/edit?usp=sharing&ouid=110387310515616113298&rtpof=true&sd=true) · 文档名 `d_nightking_empire` | **2.69** | 2.78 | ❌ **REJECT** | 8（高 CPI 买量风险待复核） |
 
-> **注**：档位（S+ / S / A+ / A / B+ / B / D）由 §3.5 三维规则决定，与加权总分是两套体系。档位 A+ 的 E 不因 7 维均分降到 3.91 而改档（档位看的是"买量合规 / 海外盘 / SLG 改造"），只是**推进优先级**顺序在 7 维均分上 I 排到 E 前面。
+> **注**：档位（S+ / S / A+ / A / B / D）由 §3.5 三维规则决定，与加权总分是两套体系。档位 A+ 的 E 不因 7 维均分降到 3.91 而改档（档位看的是"买量成本与素材边界 / 海外盘 / SLG 改造"），只是**推进优先级**顺序在 7 维均分上 I 排到 E 前面。
 
 **关键共性问题**（≥2 项目都被评委点名，需要 skill 层面强化的 · v4.2 已删除"落地"一行）：
 
 | 共性问题 | 命中项目 |
 |---|---|
-| 风险-题材/合规 | A / D / G / H |
+| 风险-题材/买量边界 | A / D / G / H |
 | 战略-题材匹配度 | D / H |
 | 玩法-阶段过渡 | D / H |
 | 商业化-付费/留存 | D / E / H |
@@ -352,11 +405,25 @@
 3. 更新每个方向卡片底部的 review ribbon（P0 条数、最紧迫问题）。
 4. 更新 §四「立项评审进展」章节的总分排序和共性问题汇总。
 5. **如有维度变更**（如 9 维 → 7 维 / 新增维度），按 §3.6 的规则同步三个文件（review-summary.md / HTML / 本文档）。
-6. **同步 PPT 工程链接**（v4.2 起）：如果 PPT 文件新建或重命名，更新 §5 对照表的 Google Slides URL，并同步到 HTML 的以下三个位置：
+6. **同步 PPT 工程链接**（v4.2 起）：如果 PPT 文件新建或重命名，更新 §5 对照表的 Google Slides URL，并同步到 HTML 的以下位置：
    - 方向总览表（§三）每行方向名的 `<a href>`
    - 每个 `.direction-block` 底部 review-ribbon 的 "PPT 工程" 名链接
-   - §四 Summary 表格 + verdict-grid + dim-matrix-table 表头的 6 个链接
+   - §四 Summary 表格 + verdict-grid + dim-matrix-table 表头中所有已经有 PPT 的方向链接
+   - 若是新建 Google Slides（例如 2026-04-28 的方向 B / 方向 C 或 2026-04-29 的方向 J），同步更新 `ppt-master/projects/review-summary.md` 与本仓 `README.md`
 7. footer 版本号 +1（如 v4.1 → v4.2），写清本次变更要点。
+
+### 6.3.1 更新商业化适配页（v4.11 后每次）
+
+1. 如果本次改动涉及“SLG 行业代表性 / 原型补全 / 商业化深水层”，先更新横纵分析报告源文件，再重新导出 `website/reports/SLG行业养成商业化原型横纵分析报告.pdf`，最后更新网页摘要。
+2. 如果新增或改名产品原型，先更新「证据校准」卡，再更新「核心原型机制快扫」矩阵、对应 `.model-card` 和「9 个题材 × 16 原型适配卡」；行业补全样本不再新增单独 `.gap-card`。机制拆分必须覆盖：准入/演进、兵种 / 克制 / 战损或待核验边界、重养成 / 重心感、玩家锚点、赛季窗口、门槛原因。
+3. 证据等级必须写清：A=官方帮助中心 / App Store / Google Play / 官网；B=产品 Wiki / 长期攻略站；C=社区经验 / 行业文章。A/B/C 不足两类交叉时，机制结论必须降级为“未确认”或“需实机验证”。页面可见角标必须用中文显性标签，不允许只写 `A/B`、`A/C`、`B+`、`C+`。
+4. 每个原型名旁边都要配 app icon：优先从官方 App Store / Google Play / 官网取图，处理成 128×128 本地 PNG，放入 `website/assets/game-icons/`；HTML 只引用相对路径，不热链。若业务侧给了指定识别图（如 Top War-like / 口袋奇兵蓝盔士兵头像），该图优先级高于自动抓取结果，修改前必须人工核对缩略图是否对应产品。
+5. 门槛判断必须服务商业化：高门槛 = D0-D7 即暴露兵种克制、战损、城建、联盟/赛季等多系统，单次升级难以解释胜负；中门槛 = 有兵种/阵型/战损，但首屏被生存、基地、英雄或医院/耐久缓冲包装；低-中门槛 = 可用塔防波次、合并升级、英雄小队、闯关等软验证在前 10 分钟解释“我为什么变强”。
+6. 如果新增或改动题材方向，同步更新「9 个题材 × 16 原型适配卡」，至少填：方向缩略图 / 题材方向 / 主入口原型 chips / 后端承接或风险原型 / 题材关键词 / 重养成 / 付费重点 / 适配度。
+7. 适配度只使用定性评分（如 23/25），不要在没有来源的情况下写 CPI、LTV、ROI、ARPU 等数字。
+8. 如引用外部产品现状，优先链接官方 App Store / Google Play / 官网 / 帮助中心；第三方广告情报只能作为参考，不能写成官方事实。
+9. 方向缩略图统一从对应 PPTX 的 slide 1 图片对象提取 cover 主视觉素材，再压到 `website/assets/direction-icons/`；不要把 `previews/01_*.png` 这种整页 PPT 预览直接作为网站缩略图，也不要在网页里直接跨仓库引用 `ppt-master/projects/...` 的绝对路径。
+10. 修改 Tab 名称或新增 Tab 时，必须同时更新 JS `VALID` 数组、footer 版本记录、README 网站读法和本文档 §4 页面结构。
 
 ### 6.4 数据年度巡检（每 6 个月做一次）
 
@@ -365,7 +432,7 @@ Steam 评论数是持续增长的，数据有半年以上就会明显过期。�
 1. 重拉每款原型的 Steam 评论总数、峰值在线、好评率，对比 §2.2 登记表。
 2. 若某款原型的评论数增长 ≥ 30%，重新拉一次完整语言分布（因为语言占比会随玩家盘扩张而漂移）。
 3. 检查 DREDGE+ / Schedule I 等移动端状态是否有新动作（新区域上架、新奖项）。
-4. 检查 Meta / Google / AppLovin / Unity Ads 的广告政策有无更新（方向 D 的"致命级合规判决"依赖这些政策条款）。
+4. 检查 Meta / Google / AppLovin / Unity Ads 的广告政策和同类黑帮题材买量成本有无更新；方向 D 当前按"可投但 CPI 高"处理，不能写成单纯政策问题。
 5. footer 版本号 +1。
 
 ### 6.5 发布流程
@@ -377,8 +444,17 @@ open steam原型数据分析.html    # 肉眼先扫一遍是否有结构破损
 # 2. UTF-8 校验
 python3 -c "open('steam原型数据分析.html','rb').read().decode('utf-8')"
 
-# 3. 推到 RUN Platform（见同目录 README.md 的 SOP）
-#    通常是 ssh 进容器，然后 bash start.sh 拉起（端口 8000 → 外部）
+# 3. 发布目录清洁检查
+#    不要把 .bak / 临时截图 / 调试 HTML / 旧版本导出文件带到外网
+find /Users/ahs/Desktop/Git/tmp/dingkx_slg_publish -maxdepth 1 -name '*.bak' -print
+
+# 4. 推到 RUN Platform
+#    使用 run-platform-deploy skill 的 run_deploy.py，不要直接调 RUN REST API
+#    实际发布源目录: /Users/ahs/Desktop/Git/tmp/dingkx_slg_publish
+python3 /Users/ahs/.agents/skills/run-platform-deploy/scripts/run_deploy.py \
+  doctor --dir /Users/ahs/Desktop/Git/tmp/dingkx_slg_publish
+python3 /Users/ahs/.agents/skills/run-platform-deploy/scripts/run_deploy.py \
+  deploy --dir /Users/ahs/Desktop/Git/tmp/dingkx_slg_publish
 ```
 
 ---
@@ -390,7 +466,7 @@ python3 -c "open('steam原型数据分析.html','rb').read().decode('utf-8')"
 | **Steam 语言分布数据被按"评论主语言"而非"玩家地域"统计** | 所有文案都写"语言分布"而不是"地区分布"；地区推断需要在 insight 里写清楚（如英语 = 北美 + 欧洲 + 澳新） |
 | **把 Steam 数据当移动端数据用** | 方向 H（DREDGE）一次踩坑：Steam 日语 0.53% 但 DREDGE+ 在日本 App Store 是王炸。凡涉及"打日本"或"打东南亚"结论，必须去对应 App Store / Google Play 国别榜交叉 |
 | **用 Chart.js 展示占比时只显示百分比不显示绝对值** | 本页已经在 `makeTooltip(total)` 里强制同时显示"占比 + 具体评论数"，后续添加新图表时必须复用这个函数 |
-| **对方向 D 的判决用"软话术"** | 方向 D 必须用"致命"、"不推荐直接对标"、"坚决不碰"这种强表态，否则评委 / 策划会误以为"加一点处理就能上"。Meta / Google Ads 的政策条款必须用原话引用 |
+| **对方向 D 的判决只写政策问题** | v4.20 后方向 D 在商业化适配页按 Mafia-like 黑帮买量处理，风险是 CPI 高、素材竞争强、预算压力大；不要再写成单纯政策问题。 |
 | **中文 .md 文件用 Cursor Write 工具落盘导致 latin-1 乱码** | 参见 `docs/lessons/Cursor写中文乱码_CURSOR_WRITE_LATIN1_BUG.md`。本文档、未来新增文档都用 Python heredoc + `write_bytes(s.encode('utf-8'))` |
 
 ---
@@ -403,7 +479,7 @@ python3 -c "open('steam原型数据分析.html','rb').read().decode('utf-8')"
 - [ ] 如果 D 方向彻底出局（REJECT 无复审），从总览表把它挪到「已否决」区块，但保留合规判决那段作为反面教材
 
 ### 中期（3 个月内）
-- [ ] 补 §五「跨原型机制矩阵」：把 8 个原型的"拆包 / 经营 / 叙事 / PVP / 放置"5 种机制做成矩阵表
+- [ ] 补 §五「跨原型机制矩阵」：把 9 个原型的"拆包 / 经营 / 叙事 / PVP / 放置 / 检查识别 / 防御"等机制做成矩阵表
 - [ ] 每个方向补「替代原型 Plan B」列，防止 A/B/C 级原型下架或凉透之后无替补
 - [ ] 加上「女性玩家占比」维度（依据广告 ID 审计或 Newzoo 报告）
 
@@ -425,4 +501,4 @@ python3 -c "open('steam原型数据分析.html','rb').read().decode('utf-8')"
 
 ---
 
-_最后更新：2026-04-20（v4 · 同步 PPT 评审结果）_
+_最后更新：2026-05-08（v4.29 · Top War / Top Heroes 拆分评分）_
